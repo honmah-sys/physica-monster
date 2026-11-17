@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フィジカモンスター ― Physica Monster</title>
+<style>
+  :root{
+    --bg:#070f1a; --bg2:#0a1524; --panel:#101d33; --panel2:#16263f;
+    --line:#253a5c; --txt:#dbe7f5; --txt-dim:#8698b8;
+    --cyan:#4fd8c8; --amber:#f0b73a; --violet:#9a7cf0; --rose:#f06a9a;
+    --lime:#7fe0a0; --danger:#f0566e; --gold:#f0c64a;
+    --glow:0 0 14px rgba(79,216,200,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--txt);font-family:"Segoe UI","Helvetica Neue",system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;min-height:100vh;padding:10px;
+    background-image:radial-gradient(circle at 15% 10%,rgba(79,216,200,.10),transparent 42%),radial-gradient(circle at 85% 90%,rgba(154,124,240,.09),transparent 42%),linear-gradient(var(--bg2),#040a12);}
+  #app{width:100%;max-width:580px;position:relative;border:1px solid var(--line);border-radius:16px;background:linear-gradient(var(--bg2),var(--bg));overflow:hidden;box-shadow:0 0 0 1px rgba(79,216,200,.08),0 18px 50px rgba(0,0,0,.65);}
+  header{padding:9px 13px;border-bottom:1px solid var(--line);background:linear-gradient(rgba(79,216,200,.05),transparent);}
+  .titleRow{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .brand{display:flex;align-items:center;gap:8px;}
+  .brand .logo{width:26px;height:26px;}
+  .brand .logo svg{width:26px;height:26px;}
+  .title{font-size:12.5px;font-weight:700;letter-spacing:.5px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hbtns{display:flex;gap:6px;}
+  .iconBtn{font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;background:var(--panel);color:var(--cyan);border:1px solid var(--line);border-radius:8px;padding:5px 11px;transition:.15s;}
+  .iconBtn:hover{border-color:var(--cyan);box-shadow:var(--glow);}
+  .stats{display:flex;gap:6px;flex-wrap:wrap;font-size:11px;margin-top:8px;align-items:center;}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:3px 10px;display:flex;gap:4px;align-items:center;}
+  .chip b{color:var(--cyan);} .chip.gold b{color:var(--gold);}
+  .leadwrap{display:flex;align-items:center;gap:6px;}
+  .leadbar{height:7px;width:90px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--line);}
+  .leadfill{height:100%;background:linear-gradient(90deg,var(--lime),var(--cyan));transition:width .25s;border-radius:6px;}
+
+  #viewport{position:relative;overflow:hidden;margin:11px auto;width:520px;height:340px;max-width:100%;border:1px solid var(--line);border-radius:12px;background:#060d18;}
+  #world{position:absolute;left:0;top:0;will-change:transform;}
+  #world canvas{display:block;image-rendering:pixelated;}
+  .wsprite{position:absolute;width:34px;height:34px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+  .wsprite svg{display:block;width:34px;height:34px;}
+  .wsprite.trainer svg{width:34px;height:40px;}
+  .bob{animation:bob 1.8s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  .wname{position:absolute;font-size:9px;color:var(--txt);background:rgba(7,15,26,.9);border:1px solid var(--line);border-radius:5px;padding:1px 5px;white-space:nowrap;transform:translateX(-50%);left:17px;top:-13px;}
+  #minimap{position:absolute;right:8px;top:8px;z-index:6;border:1px solid var(--line);border-radius:6px;background:rgba(7,15,26,.85);image-rendering:pixelated;}
+  #areaName{position:absolute;left:8px;top:8px;z-index:6;font-size:11px;font-weight:600;color:var(--cyan);background:rgba(7,15,26,.82);border:1px solid var(--line);border-radius:6px;padding:3px 9px;}
+
+  #dialogue{display:none;position:absolute;left:10px;right:10px;bottom:10px;z-index:8;background:rgba(16,29,51,.97);border:1px solid var(--cyan);border-radius:12px;box-shadow:var(--glow);}
+  #dialogue.show{display:flex;}
+  .portrait{flex:0 0 70px;border-right:1px solid var(--line);background:var(--panel2);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:12px 0 0 12px;}
+  .portrait svg{width:70px;height:84px;}
+  .dlgBody{flex:1;padding:9px 12px;}
+  .dlgName{color:var(--cyan);font-size:12px;font-weight:700;margin-bottom:4px;}
+  .dlgText{font-size:12.5px;line-height:1.7;min-height:46px;}
+  .dlgHint{font-size:10px;color:var(--txt-dim);text-align:right;margin-top:4px;}
+
+  /* battle */
+  #battle{display:none;padding:12px;}
+  #battle.trainer{background:radial-gradient(circle at 50% 20%,rgba(154,124,240,.12),transparent 60%);}
+  .bfield{display:flex;flex-direction:column;gap:6px;}
+  .brow{display:flex;align-items:center;gap:10px;}
+  .brow.foe{flex-direction:row;}
+  .brow.me{flex-direction:row-reverse;}
+  .bart{width:96px;height:96px;flex:0 0 96px;display:flex;align-items:center;justify-content:center;}
+  .bart svg{width:88px;height:88px;filter:drop-shadow(0 0 10px rgba(79,216,200,.3));}
+  .bart.hit{animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .bcard{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 11px;}
+  .bcard .bname{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;justify-content:space-between;}
+  .bcard .blv{font-size:11px;color:var(--txt-dim);}
+  .tbadge{font-size:9px;padding:1px 7px;border-radius:10px;border:1px solid;font-weight:700;}
+  .hpline{height:9px;background:var(--bg);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:6px;}
+  .hpline span{display:block;height:100%;background:linear-gradient(90deg,var(--lime),var(--cyan));transition:width .35s;}
+  .foe .hpline span{background:linear-gradient(90deg,var(--danger),var(--rose));}
+  .hptxt{font-size:10px;color:var(--txt-dim);margin-top:2px;}
+  .xpline{height:4px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:4px;}
+  .xpline span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--gold));transition:width .35s;}
+  .bmid{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--txt-dim);margin:4px 2px;}
+  .combo{color:var(--amber);font-weight:700;}
+  .partyDots{display:flex;gap:4px;}
+  .pdot{width:9px;height:9px;border-radius:50%;background:var(--lime);border:1px solid var(--line);}
+  .pdot.ko{background:#3a4660;} .pdot.cur{box-shadow:0 0 0 2px var(--cyan);}
+  #battleMenu{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px;}
+  .mvBtn{font-family:inherit;text-align:left;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer;transition:.12s;display:flex;flex-direction:column;gap:2px;}
+  .mvBtn:hover:not(:disabled){border-color:var(--cyan);box-shadow:var(--glow);}
+  .mvBtn:disabled{opacity:.4;cursor:default;}
+  .mvBtn b{font-size:12.5px;} .mvmeta{font-size:10px;color:var(--txt-dim);}
+  .cmdRow{grid-column:1/3;display:flex;gap:7px;}
+  .cmdBtn{flex:1;font-family:inherit;font-size:12px;background:var(--panel);color:var(--cyan);border:1px solid var(--line);border-radius:9px;padding:9px;cursor:pointer;}
+  .cmdBtn:hover:not(:disabled){border-color:var(--cyan);} .cmdBtn:disabled{opacity:.4;cursor:default;}
+  #quizArea{margin-top:6px;}
+  .quizMove{font-size:11px;color:var(--txt-dim);margin-bottom:5px;}
+  .quizQ{font-size:13.5px;line-height:1.6;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  #quizChoices{display:grid;gap:7px;margin-top:8px;}
+  .qchoice{text-align:left;font-family:inherit;font-size:12.5px;cursor:pointer;color:var(--txt);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;transition:.12s;}
+  .qchoice:hover:not(:disabled){border-color:var(--cyan);box-shadow:var(--glow);}
+  .qchoice:disabled{cursor:default;}
+  .qchoice.correct{background:rgba(127,224,160,.2);border-color:var(--lime);color:#eaffd6;}
+  .qchoice.wrong{background:rgba(240,86,110,.2);border-color:var(--danger);color:#ffdede;}
+
+  #log{margin:0 12px 12px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 12px;min-height:42px;font-size:12px;line-height:1.6;color:var(--txt-dim);}
+  #log .sys{color:var(--cyan);font-weight:600;}
+  #log b{color:var(--txt);}
+
+  footer{border-top:1px solid var(--line);padding:8px 12px;font-size:10px;color:var(--txt-dim);}
+  .dpad{display:none;}
+  @media (hover:none){.dpad{display:grid;grid-template-columns:repeat(3,46px);gap:5px;justify-content:center;margin-top:9px;}
+    .dpad button{font-family:inherit;font-size:17px;background:var(--panel);color:var(--cyan);border:1px solid var(--line);border-radius:8px;height:42px;cursor:pointer;}.dpad .spacer{visibility:hidden;}}
+
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(150%);background:var(--panel2);border:1px solid var(--cyan);border-radius:11px;color:var(--txt);padding:11px 18px;font-size:12px;transition:transform .4s;z-index:60;max-width:90vw;text-align:center;box-shadow:var(--glow);}
+  #toast.show{transform:translateX(-50%) translateY(0);} #toast b{color:var(--cyan);}
+
+  .overlay{display:none;position:absolute;inset:0;z-index:20;background:rgba(6,12,22,.96);padding:16px;overflow:auto;}
+  .overlay.show{display:block;}
+  .ovTitle{font-size:15px;font-weight:700;text-align:center;margin-bottom:8px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .ovClose{position:absolute;right:12px;top:12px;font-family:inherit;font-size:11px;background:var(--danger);color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;z-index:2;}
+  .tabs{display:flex;gap:5px;justify-content:center;margin:8px 0;flex-wrap:wrap;}
+  .tab{font-family:inherit;font-size:11px;background:var(--panel);color:var(--txt-dim);border:1px solid var(--line);border-radius:18px;padding:5px 13px;cursor:pointer;}
+  .tab.active{background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04121a;font-weight:700;border-color:transparent;}
+  .mpanel{display:none;} .mpanel.show{display:block;}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;margin-bottom:7px;font-size:12px;}
+  .row .info{flex:1;} .row .sub{color:var(--txt-dim);font-size:10px;margin-top:2px;}
+  .actBtn{font-family:inherit;font-size:11px;font-weight:600;background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04121a;border:none;border-radius:8px;padding:6px 13px;cursor:pointer;}
+  .actBtn:hover{filter:brightness(1.1);}
+  .statLine{font-size:12.5px;line-height:2;} .statLine b{color:var(--cyan);}
+  .empty{color:var(--txt-dim);font-size:11px;text-align:center;padding:16px;}
+  .sub{color:var(--txt-dim);font-size:11px;}
+  /* party monrow */
+  .monrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;margin-bottom:7px;}
+  .monrow.box{opacity:.85;}
+  .monart{width:44px;height:44px;flex:0 0 44px;} .monart svg{width:44px;height:44px;}
+  .moninfo{flex:1;min-width:0;}
+  .monname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;}
+  .monsub{font-size:10.5px;color:var(--txt-dim);margin-top:2px;}
+  .xpbar{height:4px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:4px;}
+  .xpbar span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--gold));}
+  .monbtns{display:flex;flex-direction:column;gap:4px;flex:0 0 auto;}
+  .monbtns .miniBtn{white-space:nowrap;}
+  .miniBtn{font-family:inherit;font-size:11px;background:var(--panel2);color:var(--cyan);border:1px solid var(--line);border-radius:7px;padding:4px 8px;cursor:pointer;}
+  .miniBtn:disabled{opacity:.4;cursor:default;}
+  .dexGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px;}
+  .dexCard{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px;text-align:center;font-size:10.5px;}
+  .dexCard svg{width:46px;height:46px;}
+  .dexCard.unknown{color:var(--txt-dim);} .dexCard.unknown svg{filter:brightness(0) opacity(.4);}
+  .chartWrap{overflow-x:auto;}
+  table.chart{border-collapse:collapse;font-size:11px;margin:0 auto;}
+  table.chart th,table.chart td{border:1px solid var(--line);padding:4px 6px;text-align:center;min-width:28px;}
+  table.chart .good{color:var(--lime);font-weight:700;} table.chart .bad{color:var(--danger);font-weight:700;}
+  .note{font-size:11px;color:var(--txt-dim);line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .note b{color:var(--txt);}
+  .rankRow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:8px 11px;margin-bottom:6px;font-size:12px;}
+  .rankRow.me{border-color:var(--cyan);box-shadow:var(--glow);}
+  .rankNo{flex:0 0 32px;font-weight:700;font-size:13px;text-align:center;}
+  .rankName{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rankRec{flex:0 0 auto;color:var(--txt-dim);font-size:11px;} .rankRec b{color:var(--gold);}
+  .vrow{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;margin-bottom:8px;position:relative;}
+  .vhead{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+  .vname{font-weight:700;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .vrec{font-size:10.5px;color:var(--txt-dim);flex:0 0 auto;}
+  .vteams{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
+  .vteam{position:relative;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:var(--panel2);border:1px solid var(--line);border-radius:7px;}
+  .vteam svg{width:28px;height:28px;}
+  .vlv{position:absolute;right:-2px;bottom:-3px;font-size:8px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 3px;color:var(--cyan);}
+  .vbtn{position:absolute;right:11px;bottom:11px;}
+  .vrow .vteams{padding-right:66px;}
+  .noteItem{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:11.5px;line-height:1.75;}
+  .noteItem h4{color:var(--cyan);font-size:11.5px;margin-bottom:4px;}
+
+  /* title */
+  #titlescreen{position:absolute;inset:0;z-index:50;background:linear-gradient(#070f1a,#040a12);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background-image:radial-gradient(circle at 50% 28%,rgba(79,216,200,.16),transparent 55%),radial-gradient(circle at 50% 74%,rgba(154,124,240,.12),transparent 55%);}
+  #titlescreen .ttlBadge{font-size:10px;letter-spacing:5px;color:var(--cyan);margin-bottom:8px;}
+  .titleArt{margin-bottom:18px;} .titleArt svg{width:66px;height:66px;filter:drop-shadow(0 0 12px rgba(79,216,200,.5));}
+  #titlescreen h1{font-size:27px;font-weight:800;letter-spacing:1px;margin-bottom:6px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  #titlescreen .sub{color:var(--txt-dim);font-size:11px;margin-bottom:18px;}
+  .nameField{margin-bottom:14px;}
+  .nameField input{font-family:inherit;font-size:13px;text-align:center;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 12px;width:200px;max-width:70vw;}
+  .nameField input:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow);}
+  .startBtn{font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04121a;border:none;border-radius:11px;padding:12px 34px;margin:5px;box-shadow:var(--glow);}
+  .startBtn:hover{filter:brightness(1.1);}
+  #titlescreen .tip{color:var(--txt-dim);font-size:10px;margin-top:16px;line-height:1.8;}
+
+  /* starter modal */
+  #starterModal{position:absolute;inset:0;z-index:52;background:rgba(6,12,22,.97);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+  #starterModal.show{display:flex;}
+  #starterModal h2{font-size:16px;margin-bottom:4px;color:var(--cyan);}
+  #starterModal .sub{margin-bottom:16px;}
+  #starterChoices{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .starterCard{font-family:inherit;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;width:140px;transition:.15s;}
+  .starterCard:hover{border-color:var(--cyan);box-shadow:var(--glow);transform:translateY(-3px);}
+  .scart svg{width:66px;height:66px;}
+  .scname{font-size:13px;font-weight:700;margin-top:4px;} .sctype{font-size:11px;margin-top:2px;}
+
+  /* ending */
+  #ending{display:none;position:absolute;inset:0;z-index:55;background:linear-gradient(#040a12,#070f1a);overflow:hidden;}
+  #ending.show{display:block;}
+  #ending .edScroll{position:absolute;left:0;right:0;top:100%;padding:0 24px;text-align:center;}
+  #ending.run .edScroll{animation:edroll 34s linear forwards;}
+  @keyframes edroll{0%{top:100%;}100%{top:-240%;}}
+  #ending h2{font-size:22px;font-weight:800;margin:14px 0 8px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  #ending .edLine{font-size:13px;color:var(--txt);line-height:2;margin:4px 0;}
+  #ending .edHead{font-size:11px;color:var(--cyan);letter-spacing:3px;margin:20px 0 4px;}
+  #ending .edDim{color:var(--txt-dim);font-size:11px;}
+  #ending .edArt{margin:16px auto;} #ending .edArt svg{width:76px;height:76px;filter:drop-shadow(0 0 14px rgba(79,216,200,.5));}
+  #ending .startBtn{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:none;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+<!-- ===== Firebase（非同期対戦・クラウドセーブ・ランキング） =====
+     使い方: 下の FIREBASE_CONFIG に自分のプロジェクトの値を入れるだけ。
+     未設定（空のまま）でも、この端末内のローカル保存で普通に遊べます。 -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  /* ▼▼▼ ここにFirebaseコンソールの firebaseConfig を貼り付けると、クラスで共有できます ▼▼▼
+     空のままなら「この端末のみ」で動作します（授業前の試用OK）。 */
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAGvJIgwg40by-SataIwcGgND-SyMQNuYk",
+    authDomain: "acid-monster.firebaseapp.com",
+    projectId: "acid-monster",
+    storageBucket: "acid-monster.firebasestorage.app",
+    messagingSenderId: "62430143739",
+    appId: "1:62430143739:web:7275927bd3919c9b21bc5e"
+  };
+  /* ▲▲▲ ここまで ▲▲▲ */
+</script>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="titleRow">
+      <div class="brand"><span class="logo" id="logoSlot"></span><span class="title">フィジカモンスター</span></div>
+      <div class="hbtns"><button class="iconBtn" id="bgmBtn" title="BGM">♪</button><button class="iconBtn" id="openMenu">☰ MENU</button></div>
+    </div>
+    <div class="stats">
+      <div class="chip">👤 <b id="pname">―</b></div>
+      <div class="chip gold">✦ <b id="gold">0</b></div>
+      <div class="chip">🏅 <b id="badges">0</b></div>
+      <div class="chip">📖 <b id="dexn">0</b></div>
+      <div class="chip leadwrap"><span id="leadName">―</span><span class="leadbar"><span class="leadfill" id="leadHp" style="width:100%"></span></span><span id="leadHpTxt" class="sub"></span></div>
+    </div>
+  </header>
+
+  <div id="viewport">
+    <div id="world"></div>
+    <div id="areaName">―</div>
+    <canvas id="minimap" width="86" height="58"></canvas>
+    <div id="dialogue">
+      <div class="portrait" id="portrait"></div>
+      <div class="dlgBody"><div class="dlgName" id="dlgName"></div><div class="dlgText" id="dlgText"></div><div class="dlgHint">▶ クリック / Enter / Space で進む</div></div>
+    </div>
+
+    <!-- MENU -->
+    <div class="overlay" id="menu">
+      <button class="ovClose" id="closeMenu">× 閉じる</button>
+      <div class="ovTitle">MENU</div>
+      <div class="tabs">
+        <button class="tab active" data-tab="team">手持ち</button>
+        <button class="tab" data-tab="bag">道具</button>
+        <button class="tab" data-tab="dex">図鑑</button>
+        <button class="tab" data-tab="type">相性</button>
+        <button class="tab" data-tab="note">公式</button>
+      </div>
+      <div class="mpanel show" id="mpanel-team"></div>
+      <div class="mpanel" id="mpanel-bag"></div>
+      <div class="mpanel" id="mpanel-dex"></div>
+      <div class="mpanel" id="mpanel-type"></div>
+      <div class="mpanel" id="mpanel-note"></div>
+    </div>
+
+    <!-- SHOP -->
+    <div class="overlay" id="shop">
+      <button class="ovClose" id="closeShop">× 出る</button>
+      <div class="ovTitle">補給ショップ</div>
+      <div style="text-align:center;font-size:11px;color:var(--txt-dim);margin-bottom:8px;">所持 ✦ <b id="shopGold" style="color:var(--gold)">0</b></div>
+      <div id="shopList"></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="overlay" id="register">
+      <button class="ovClose" id="closeRegister">× 閉じる</button>
+      <div class="ovTitle">📋 編成登録</div>
+      <div id="registerBody"></div>
+    </div>
+
+    <!-- RANKING -->
+    <div class="overlay" id="ranking">
+      <button class="ovClose" id="closeRanking">× 閉じる</button>
+      <div class="ovTitle">🏆 ランキング</div>
+      <div id="rankingBody"></div>
+    </div>
+
+    <!-- VERSUS (自由対戦) -->
+    <div class="overlay" id="versus">
+      <button class="ovClose" id="closeVersus">× 閉じる</button>
+      <div class="ovTitle">⚔ 自由対戦</div>
+      <div id="versusBody"></div>
+    </div>
+
+    <!-- TITLE -->
+    <div id="titlescreen">
+      <div class="ttlBadge">PHYSICS · ALL FIELDS</div>
+      <div class="titleArt" id="titleArt"></div>
+      <h1>フィジカモンスター</h1>
+      <div class="sub">力学・波動・熱・電磁気・原子を学ぶモンスターバトル</div>
+      <div class="nameField"><input id="nameInput" maxlength="8" placeholder="トレーナー名（8字まで）"></div>
+      <div>
+        <button class="startBtn" id="newBtn">▶ はじめる</button>
+        <button class="startBtn" id="contBtn" style="display:none;background:linear-gradient(90deg,var(--lime),var(--cyan));">つづきから</button>
+      </div>
+      <button class="iconBtn" id="resetBtn" style="font-size:10px;margin-top:6px;">セーブ削除</button>
+      <div class="tip">移動 = 矢印/WASD　会話 = Space　メニュー = M<br>草むらで出会い、技で物理の公式クイズに正解して戦う。相性とコンボを活かし、弱らせて捕獲。<br>アリーナでCPUに挑戦（バッジ）。⚔で登録者と自由対戦、📋で編成登録、🏆でランキング！</div>
+    </div>
+
+    <!-- STARTER -->
+    <div id="starterModal">
+      <h2>最初の相棒を選ぼう</h2>
+      <div class="sub">力学・波動・エネルギー、3タイプから1体</div>
+      <div id="starterChoices"></div>
+    </div>
+
+    <!-- ENDING -->
+    <div id="ending"><div class="edScroll" id="edScroll"></div><button class="startBtn" id="edClose">▶ アリーナへ戻る</button></div>
+  </div>
+
+  <!-- BATTLE -->
+  <div id="battle">
+    <div class="bfield">
+      <div class="brow foe">
+        <div class="bart" id="foeArt"></div>
+        <div class="bcard"><div class="bname"><span id="foeName">―</span><span id="foeType"></span></div>
+          <div class="blv" id="foeLv">Lv―</div><div class="hpline"><span id="foeHp" style="width:100%"></span></div></div>
+      </div>
+      <div class="bmid"><span class="partyDots" id="partyDots"></span><span class="combo" id="comboTag"></span></div>
+      <div class="brow me">
+        <div class="bart" id="myArt"></div>
+        <div class="bcard"><div class="bname"><span id="myName">―</span><span id="myType"></span></div>
+          <div class="blv" id="myLv">Lv―</div><div class="hpline"><span id="myHp" style="width:100%"></span></div>
+          <div class="hptxt" id="myHpTxt"></div><div class="xpline"><span id="myExp" style="width:0%"></span></div></div>
+      </div>
+    </div>
+    <div id="battleMenu"></div>
+    <div id="quizArea" style="display:none;">
+      <div class="quizMove" id="quizMove"></div>
+      <div class="quizQ" id="quizQ"></div>
+      <div id="quizChoices"></div>
+    </div>
+  </div>
+
+  <div id="log"><span class="sys">▶ </span>「はじめる」を押して冒険へ。</div>
+
+  <footer>移動 ← ↑ → ↓ / WASD　｜　会話 Space　｜　メニュー M
+    <div class="dpad"><div class="spacer"></div><button data-d="up">↑</button><div class="spacer"></div><button data-d="left">←</button><button data-d="down">↓</button><button data-d="right">→</button></div>
+  </footer>
+</div>
+<div id="toast"></div>
+
+<script id="dataScript">
+/* =========================================================
+   フィジカモンスターズ ― データ層（物理版）
+   範囲: 高校物理基礎＋物理 全範囲の「公式確認」中心
+   ・6分野タイプ + 相性表
+   ・問題: 固定 {q,correct,wrong[]} と 生成 {gen:()=>({q,correct,wrong[]})}
+   ・モンスター種族: 種族値/分野/進化/習得技
+   ・四天王級トレーナーは難問プールを出題
+   ========================================================= */
+function ri(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function fmt(n){ n=Math.round(n*1000)/1000; return Number.isInteger(n)?String(n):String(n); }
+function mc(correct, unit, wrongNums){
+  const label=v=>fmt(v)+unit, cStr=label(correct), out=[], seen=new Set([cStr]);
+  const push=v=>{ if(v===undefined||v===null||!isFinite(v))return; const s=label(v); if(!seen.has(s)){seen.add(s);out.push(s);} };
+  (wrongNums||[]).forEach(push);
+  const fills=[correct*2,correct/2,correct*10,correct/10,correct+1,correct>1?correct-1:correct+2,correct*3,correct*1.5,correct*4];
+  for(const f of fills){ if(out.length>=3)break; push(f); }
+  let k=1; while(out.length<3){ push(correct+k*(correct||1)); k++; if(k>20)break; }
+  return {correct:cStr, wrong:out.slice(0,3)};
+}
+
+/* ===== 分野タイプ ===== */
+/* mech 力学 / wave 波動 / heat 熱 / elec 電磁気 / atom 原子 / energy エネルギー */
+const TYPES = {
+  mech:   {name:"力学", color:"#4a8af0", icon:"🔵"},
+  wave:   {name:"波動", color:"#4fd8c8", icon:"🟡"},
+  heat:   {name:"熱", color:"#f0566e", icon:"🔴"},
+  elec:   {name:"電磁気", color:"#f0b73a", icon:"🟠"},
+  atom:   {name:"原子", color:"#9a7cf0", icon:"🟣"},
+  energy: {name:"エネルギー", color:"#7fe0a0", icon:"🟢"},
+};
+/* 相性: attacker -> defender 倍率(2=抜群,0.5=いまひとつ,1=等倍)
+   設計の筋:
+   - 力学⇔エネルギーは表裏一体で互いに抜群(仕事・運動エネルギー)
+   - 電磁気→波動 抜群(電磁波), 波動→原子 抜群(光量子・ボーア)
+   - 熱→エネルギー 抜群(熱力学), 原子→熱 いまひとつ
+   - 力学→熱 抜群(分子運動), 電磁気→力学 いまひとつ */
+const CHART = {
+  mech:   {energy:2, heat:2,   wave:1,   elec:0.5, atom:1,   mech:1},
+  wave:   {atom:2,   elec:1,   mech:1,   heat:0.5, energy:1, wave:1},
+  heat:   {energy:2, atom:0.5, mech:1,   wave:1,   elec:1,   heat:1},
+  elec:   {wave:2,   mech:0.5, atom:1,   heat:1,   energy:1, elec:1},
+  atom:   {heat:0.5, elec:2,   wave:1,   mech:1,   energy:1, atom:1},
+  energy: {mech:2,   heat:1,   wave:1,   elec:1,   atom:0.5, energy:1},
+};
+function typeMul(atk,def){ return (CHART[atk] && CHART[atk][def]!==undefined) ? CHART[atk][def] : 1; }
+
+/* ===== 技（技=クイズ） ===== */
+const MOVES = {
+  // 力学
+  velocity:{name:"等加速ストライク", type:"mech", power:35, qkey:"mech_basic"},
+  momentum:{name:"運動量インパクト", type:"mech", power:55, qkey:"mech_adv"},
+  // 波動
+  wavefront:{name:"波面スウィープ", type:"wave", power:35, qkey:"wave_basic"},
+  doppler:{name:"ドップラーブラスト", type:"wave", power:52, qkey:"wave_adv"},
+  // 熱
+  thermal:{name:"熱量バースト", type:"heat", power:35, qkey:"heat_basic"},
+  gaslaw:{name:"気体法則クラッシュ", type:"heat", power:54, qkey:"heat_adv"},
+  // 電磁気
+  ohm:{name:"オームショック", type:"elec", power:35, qkey:"elec_basic"},
+  lorentz:{name:"ローレンツ雷撃", type:"elec", power:56, qkey:"elec_adv"},
+  // 原子
+  photon:{name:"光子フラッシュ", type:"atom", power:38, qkey:"atom_basic"},
+  nuclear:{name:"核変換レイ", type:"atom", power:55, qkey:"atom_adv"},
+  // エネルギー
+  energyshot:{name:"力学的エネルギー弾", type:"energy", power:38, qkey:"energy_basic"},
+  conserve:{name:"保存則オーバーロード", type:"energy", power:54, qkey:"energy_adv"},
+  // 無属性(基本技)
+  tackle:{name:"物理タックル", type:"mech", power:28, qkey:"mixed_easy"},
+};
+
+/* ===== 問題プール =====
+   物理基礎＋物理の公式確認。固定＝公式そのもの、生成＝数値代入。
+   ========================================================= */
+const QUESTIONS = {
+  /* --- 力学 基礎 --- */
+  mech_basic:[
+    {q:"等加速度直線運動の速度の式は？", correct:"v = v₀ + at", wrong:["v = v₀ - at²","v = at²","v = v₀t + a"]},
+    {q:"等加速度直線運動の変位の式は？", correct:"x = v₀t + ½at²", wrong:["x = v₀t + at²","x = ½v₀t² + at","x = v₀ + ½at²"]},
+    {q:"運動方程式は？", correct:"ma = F（F = ma）", wrong:["F = mv","F = ma²","F = m/a"]},
+    {q:"自由落下で、時間tのときの速さは？(初速0)", correct:"v = gt", wrong:["v = ½gt²","v = g/t","v = gt²"]},
+    {gen:()=>{const a=pick([2,3,4,5]);const t=pick([2,3,4]);const v=a*t;const r=mc(v," m/s",[a+t,a*t*t,t]);
+      return {q:"初速0、加速度"+a+" m/s² で "+t+" 秒後の速さは？(v=at)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const g=10;const t=pick([1,2,3]);const v=g*t;const r=mc(v," m/s",[t,g,v+g]);
+      return {q:"自由落下(g=10)で "+t+" 秒後の速さは？(初速0)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 力学 応用 --- */
+  mech_adv:[
+    {q:"運動量の式は？", correct:"p = mv", wrong:["p = ½mv²","p = ma","p = mv²"]},
+    {q:"力積と運動量の関係は？", correct:"力積 = 運動量の変化（Ft = mv − mv₀）", wrong:["力積 = 運動エネルギーの変化","Ft = ½mv²","力積 = 仕事"]},
+    {q:"向心力の式は？", correct:"F = mv²/r", wrong:["F = mr/v²","F = mv/r","F = m/(v²r)"]},
+    {q:"単振動の周期（ばね）は？", correct:"T = 2π√(m/k)", wrong:["T = 2π√(k/m)","T = 2π√(m·k)","T = 2π·m/k"]},
+    {gen:()=>{const m=pick([2,3,4]);const v=pick([3,4,5]);const p=m*v;const r=mc(p," kg·m/s",[m+v,m*v*v,v]);
+      return {q:"質量"+m+" kg、速さ"+v+" m/s の運動量は？(p=mv)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const m=pick([1,2]);const v=pick([4,6,8]);const r=pick([2,4]);const F=m*v*v/r;const rr=mc(F," N",[m*v/r,m*r/(v*v),v*v/r]);
+      return {q:"質量"+m+" kg が速さ"+v+" m/s で半径"+r+" m の円運動。向心力は？(F=mv²/r)",correct:rr.correct,wrong:rr.wrong};}},
+  ],
+  /* --- 波動 基礎 --- */
+  wave_basic:[
+    {q:"波の基本式（速さ）は？", correct:"v = fλ", wrong:["v = f/λ","v = λ/f","v = f²λ"]},
+    {q:"波の周期Tと振動数fの関係は？", correct:"T = 1/f", wrong:["T = f","T = f²","T = 2f"]},
+    {q:"音の速さ（気温t℃）のおおよその式は？", correct:"V = 331.5 + 0.6t", wrong:["V = 331.5 − 0.6t","V = 0.6 + 331.5t","V = 331.5t"]},
+    {q:"波の山と山の間の距離を何という？", correct:"波長", wrong:["振幅","周期","振動数"]},
+    {gen:()=>{const f=pick([2,4,5]);const lam=pick([2,3]);const v=f*lam;const r=mc(v," m/s",[f+lam,f/lam,lam/f]);
+      return {q:"振動数"+f+" Hz、波長"+lam+" m の波の速さは？(v=fλ)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const f=pick([2,4,5,10]);const r=mc(1/f," s",[f,f/2,2/f,f*f]);
+      return {q:"振動数"+f+" Hz の波の周期は？(T=1/f)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 波動 応用 --- */
+  wave_adv:[
+    {q:"ドップラー効果（音源が近づく）の観測振動数は？", correct:"f' = f·V/(V−v)", wrong:["f' = f·V/(V+v)","f' = f·(V−v)/V","f' = f·v/V"]},
+    {q:"凸レンズの式（写像公式）は？", correct:"1/a + 1/b = 1/f", wrong:["1/a − 1/b = 1/f","a + b = f","1/a + 1/b = f"]},
+    {q:"ヤングの実験で明線の条件（経路差）は？", correct:"経路差 = mλ（mは整数）", wrong:["経路差 = (m+½)λ","経路差 = mλ/2","経路差 = λ/m"]},
+    {q:"弦の基本振動の波長は弦の長さLの何倍？", correct:"2L（λ = 2L）", wrong:["L","L/2","4L"]},
+    {gen:()=>{const V=340;const v=pick([20,40]);const f=pick([600,680]);const fp=V/(V-v)*f;
+      const r=mc(Math.round(fp)," Hz",[V/(V+v)*f,f,(V-v)/V*f]);
+      return {q:"音速340、音源が速さ"+v+" m/s で近づく。振動数"+f+" Hz の音の観測振動数は？",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 熱 基礎 --- */
+  heat_basic:[
+    {q:"熱量の式は？", correct:"Q = mcΔt（質量×比熱×温度変化）", wrong:["Q = mc/Δt","Q = c·Δt","Q = m·Δt"]},
+    {q:"セルシウス温度t℃と絶対温度Tの関係は？", correct:"T = t + 273", wrong:["T = t − 273","T = 273 − t","T = 273t"]},
+    {q:"熱力学第一法則は？", correct:"ΔU = Q + W（内部エネルギー変化＝加えた熱＋された仕事）", wrong:["ΔU = Q − W 常に","Q = ΔU·W","ΔU = QW"]},
+    {q:"絶対零度は約何℃？", correct:"−273℃", wrong:["0℃","−100℃","273℃"]},
+    {gen:()=>{const m=pick([100,200,500]);const c=pick([4.2,2.1]);const dt=pick([10,20]);const Q=m*c*dt;
+      const r=mc(Math.round(Q)," J",[m*c/dt,c*dt,m*dt]);
+      return {q:"質量"+m+" g、比熱"+c+" J/(g·K) を "+dt+" K 上げる熱量は？(Q=mcΔt)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const t=pick([27,100,-73,-173]);const T=t+273;const r=mc(T," K",[t,273-t,T+100,t-273]);
+      return {q:t+"℃ を絶対温度に直すと？(T=t+273)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 熱 応用 --- */
+  heat_adv:[
+    {q:"ボイル・シャルルの法則は？", correct:"pV/T = 一定", wrong:["pV = 一定 常に","V/T = p","pT/V = 一定"]},
+    {q:"理想気体の状態方程式は？", correct:"pV = nRT", wrong:["pV = nR/T","p/V = nRT","pVT = nR"]},
+    {q:"ボイルの法則（温度一定）は？", correct:"pV = 一定", wrong:["V/T = 一定","p/T = 一定","pT = 一定"]},
+    {q:"シャルルの法則（圧力一定）は？", correct:"V/T = 一定", wrong:["pV = 一定","pT = 一定","p/V = 一定"]},
+    {gen:()=>{const p1=pick([1,2]);const V1=pick([2,4]);const V2=pick([1,8]);const p2=p1*V1/V2;
+      const r=mc(p2," ×10⁵ Pa",[p1*V2/V1,p1*V1*V2,V1/V2]);
+      return {q:"等温変化で "+p1+"×10⁵ Pa・"+V1+" L が "+V2+" L になった。圧力は？(pV一定)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 電磁気 基礎 --- */
+  elec_basic:[
+    {q:"オームの法則は？", correct:"V = RI", wrong:["V = R/I","V = I/R","V = RI²"]},
+    {q:"電力の式は？", correct:"P = VI", wrong:["P = V/I","P = V²I","P = I/V"]},
+    {q:"直列抵抗の合成は？", correct:"R = R₁ + R₂", wrong:["1/R = 1/R₁ + 1/R₂","R = R₁R₂","R = R₁R₂/(R₁+R₂)"]},
+    {q:"並列抵抗の合成は？", correct:"1/R = 1/R₁ + 1/R₂", wrong:["R = R₁ + R₂","R = R₁R₂","R = (R₁+R₂)/2"]},
+    {gen:()=>{const R=pick([2,4,5,10]);const I=pick([2,3]);const V=R*I;const r=mc(V," V",[R+I,R/I,I/R]);
+      return {q:"抵抗"+R+" Ω に電流"+I+" A。電圧は？(V=RI)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const V=pick([6,12,24]);const I=pick([2,3,4]);const P=V*I;const r=mc(P," W",[V+I,V/I,I/V]);
+      return {q:"電圧"+V+" V、電流"+I+" A のときの電力は？(P=VI)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 電磁気 応用 --- */
+  elec_adv:[
+    {q:"クーロンの法則は？", correct:"F = k·q₁q₂/r²", wrong:["F = k·q₁q₂/r","F = k·q₁q₂·r²","F = k·(q₁+q₂)/r²"]},
+    {q:"磁場中の電流が受ける力は？", correct:"F = BIL", wrong:["F = B/IL","F = BI/L","F = B²IL"]},
+    {q:"ローレンツ力の大きさは？", correct:"F = qvB", wrong:["F = qB/v","F = qv/B","F = q/(vB)"]},
+    {q:"コンデンサーの電気量は？", correct:"Q = CV", wrong:["Q = C/V","Q = V/C","Q = CV²"]},
+    {q:"ファラデーの電磁誘導の法則（起電力）は？", correct:"V = −ΔΦ/Δt（磁束の変化率）", wrong:["V = ΔΦ·Δt","V = Φ/t²","V = BIL"]},
+    {gen:()=>{const B=pick([2,3]);const I=pick([2,4]);const L=pick([0.5,2]);const F=B*I*L;const r=mc(F," N",[B+I+L,B*I/L,I*L/B]);
+      return {q:"磁束密度"+B+" T、電流"+I+" A、導線長"+L+" m が受ける力は？(F=BIL)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 原子 基礎 --- */
+  atom_basic:[
+    {q:"光子1個のエネルギーは？", correct:"E = hν（h:プランク定数, ν:振動数）", wrong:["E = h/ν","E = hν²","E = ν/h"]},
+    {q:"光電効果で、飛び出す電子の運動エネルギーは？", correct:"K = hν − W（W:仕事関数）", wrong:["K = hν + W","K = W − hν","K = hν·W"]},
+    {q:"物質波（ド・ブロイ波長）は？", correct:"λ = h/(mv)", wrong:["λ = mv/h","λ = h·mv","λ = hv/m"]},
+    {q:"原子核の構成要素は？", correct:"陽子と中性子", wrong:["陽子と電子","中性子と電子","陽子のみ"]},
+    {q:"質量数は何の和？", correct:"陽子の数＋中性子の数", wrong:["陽子の数＋電子の数","中性子の数のみ","陽子の数のみ"]},
+  ],
+  /* --- 原子 応用 --- */
+  atom_adv:[
+    {q:"α崩壊で原子核はどう変わる？", correct:"陽子2・中性子2（質量数4, 原子番号2）減る", wrong:["原子番号が1増える","質量数は変わらず原子番号1増","中性子1個放出"]},
+    {q:"β⁻崩壊で原子番号はどうなる？", correct:"1増える（中性子→陽子＋電子）", wrong:["1減る","2減る","変わらない"]},
+    {q:"質量とエネルギーの等価の式は？", correct:"E = mc²", wrong:["E = ½mc²","E = mc","E = m/c²"]},
+    {q:"半減期とは？", correct:"放射性原子核が半分に減る時間", wrong:["全部なくなる時間","2倍になる時間","崩壊が止まる時間"]},
+    {gen:()=>{const n=pick([1,2,3]);const frac=1/Math.pow(2,n); // 半減期n回で (1/2)^n
+      const labels={1:"1/2",2:"1/4",3:"1/8"};const correct=labels[n];
+      const pool=["1","1/2","1/4","1/8","1/16","0"];const wrong=pool.filter(x=>x!==correct).slice(0,3);
+      return {q:"半減期の "+n+" 倍の時間が経つと、放射性原子核の残りの割合は？",correct:correct,wrong:wrong};}},
+  ],
+  /* --- エネルギー 基礎 --- */
+  energy_basic:[
+    {q:"運動エネルギーの式は？", correct:"K = ½mv²", wrong:["K = mv²","K = ½mv","K = mv"]},
+    {q:"重力による位置エネルギーは？", correct:"U = mgh", wrong:["U = ½mgh","U = mg/h","U = mgh²"]},
+    {q:"仕事の式は？", correct:"W = Fx（力×移動距離）", wrong:["W = F/x","W = Fx²","W = F + x"]},
+    {q:"弾性エネルギー（ばね）は？", correct:"U = ½kx²", wrong:["U = kx²","U = ½kx","U = kx"]},
+    {gen:()=>{const m=pick([2,4]);const v=pick([3,5]);const K=0.5*m*v*v;const r=mc(K," J",[m*v,0.5*m*v,m*v*v]);
+      return {q:"質量"+m+" kg、速さ"+v+" m/s の運動エネルギーは？(K=½mv²)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const m=pick([2,5]);const g=10;const h=pick([3,4,10]);const U=m*g*h;const r=mc(U," J",[m*h,m*g,g*h]);
+      return {q:"質量"+m+" kg を高さ"+h+" m(g=10)に持ち上げた位置エネルギーは？(U=mgh)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- エネルギー 応用 --- */
+  energy_adv:[
+    {q:"力学的エネルギー保存則とは？", correct:"運動エネルギー＋位置エネルギー＝一定", wrong:["運動エネルギー＝位置エネルギー 常に","力積が一定","運動量が一定"]},
+    {q:"仕事率（仕事を時間で割る）は？", correct:"P = W/t", wrong:["P = Wt","P = t/W","P = W + t"]},
+    {q:"自由落下で高さhから落ちたときの速さは？(エネルギー保存)", correct:"v = √(2gh)", wrong:["v = √(gh)","v = 2gh","v = √(gh/2)"]},
+    {gen:()=>{const g=10;const h=pick([5,20,45]);const v=Math.sqrt(2*g*h);const r=mc(v," m/s",[2*g*h,Math.sqrt(g*h),g*h]);
+      return {q:"高さ"+h+" m から自由落下(g=10)。地面での速さは？(v=√(2gh))",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const W=pick([100,600,1200]);const t=pick([2,5,10]);const P=W/t;const r=mc(P," W",[W*t,t/W,W+t]);
+      return {q:""+W+" J の仕事を "+t+" 秒でした。仕事率は？(P=W/t)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  /* --- 四天王・難問プール（計算が重い/複合） --- */
+  hard_mech:[
+    {gen:()=>{const v0=pick([20,30]);const g=10;const t=v0/g;const h=v0*v0/(2*g);const r=mc(h," m",[v0*v0/g,v0/g,v0*t]);
+      return {q:"初速"+v0+" m/s で真上に投げた(g=10)。最高点の高さは？(h=v₀²/2g)",correct:r.correct,wrong:r.wrong};}},
+    {gen:()=>{const m1=pick([2,3]);const v1=pick([4,6]);const m2=pick([1,2]);const v=m1*v1/(m1+m2); // 完全非弾性
+      const r=mc(Math.round(v*100)/100," m/s",[v1,m1*v1/m2,(m1+m2)/v1]);
+      return {q:"質量"+m1+" kg・速さ"+v1+" m/s の物体が静止した"+m2+" kg と合体。合体後の速さは？(運動量保存)",correct:r.correct,wrong:r.wrong};}},
+    {q:"なめらかな斜面(角θ)上の物体の加速度は？", correct:"a = g·sinθ", wrong:["a = g·cosθ","a = g·tanθ","a = g"]},
+  ],
+  hard_elec:[
+    {gen:()=>{const R1=pick([2,3]);const R2=pick([6,4]);const Rp=R1*R2/(R1+R2);const V=pick([6,12]);const I=V/Rp;
+      const r=mc(Math.round(I*100)/100," A",[V/(R1+R2),V*Rp,V/R1]);
+      return {q:""+R1+" Ω と "+R2+" Ω の並列に "+V+" V。全電流は？(並列合成→I=V/R)",correct:r.correct,wrong:r.wrong};}},
+    {q:"磁束密度Bの一様磁場に垂直に速さvで入った電荷qの円運動の半径は？", correct:"r = mv/(qB)", wrong:["r = qB/(mv)","r = qvB/m","r = mvB/q"]},
+    {gen:()=>{const C=pick([2,4]);const V=pick([5,10]);const Q=C*V;const U=0.5*C*V*V;const r=mc(U," ×10⁻⁶ J",[C*V,Q,C*V*V]);
+      return {q:""+C+" μF のコンデンサーを "+V+" V で充電。蓄えられるエネルギーは？(U=½CV²)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  hard_wave:[
+    {q:"開管(両端開口)の気柱の基本振動の波長は、管長Lの？", correct:"2L", wrong:["L","4L","L/2"]},
+    {q:"閉管(片方閉)の気柱の基本振動の波長は、管長Lの？", correct:"4L", wrong:["2L","L","L/4"]},
+    {gen:()=>{const n=pick([1,2,3]);const L=pick([0.5,1]);const V=340;const lam=2*L/n;const f=V/lam;
+      const r=mc(Math.round(f)," Hz",[V*lam,V/(2*L),n*L]);
+      return {q:"長さ"+L+" m の弦(両端固定)の第"+n+"倍振動の振動数は？(音速340, λ=2L/n)",correct:r.correct,wrong:r.wrong};}},
+  ],
+  hard_atom:[
+    {q:"水素原子のボーアモデルで、定常状態の条件(量子条件)は？", correct:"2πr = nλ（円周が波長の整数倍）", wrong:["2πr = λ/n","r = nλ","πr² = nλ"]},
+    {gen:()=>{const h=6.6;const f=pick([5,10]);const E=h*f;const r=mc(E," ×10⁻¹⁹ J",[h/f,f/h,h*f*f]);
+      return {q:"振動数"+f+"×10¹⁴ Hz の光子のエネルギーは？(E=hν, h=6.6×10⁻³⁴)",correct:r.correct,wrong:r.wrong};}},
+    {q:"光電効果で限界振動数ν₀より小さい光を当てると？", correct:"強くしても電子は飛び出さない", wrong:["強くすれば飛び出す","必ず飛び出す","電子が吸収される"]},
+  ],
+  /* --- 混合（やさしい・基本技） --- */
+  mixed_easy:[
+    {q:"速さ×時間で求まるのは？", correct:"距離", wrong:["加速度","力","質量"]},
+    {q:"F = ma の a は？", correct:"加速度", wrong:["速度","距離","力"]},
+    {q:"単位「N(ニュートン)」は何の単位？", correct:"力", wrong:["エネルギー","仕事率","電流"]},
+    {q:"単位「J(ジュール)」は何の単位？", correct:"エネルギー・仕事", wrong:["力","電圧","速さ"]},
+    {q:"単位「W(ワット)」は何の単位？", correct:"仕事率・電力", wrong:["仕事","力","電気量"]},
+  ],
+};
+
+/* ===== モンスター種族 ===== */
+const SPECIES = {
+  /* 力学ライン */
+  mechick:{name:"メカニック", type:"mech", base:{hp:44,atk:52,spd:56}, look:{shape:"orbit",pal:"mech",tier:1},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"velocity"},{lv:10,move:"energyshot"},{lv:16,move:"momentum"}], evo:{to:"mechion",lv:16}},
+  mechion:{name:"メカイオン", type:"mech", base:{hp:62,atk:72,spd:68}, look:{shape:"beast",pal:"mech",tier:2},
+    learnset:[{lv:1,move:"velocity"},{lv:1,move:"momentum"},{lv:24,move:"conserve"}], evo:{to:"mechgalaxy",lv:32}},
+  mechgalaxy:{name:"メカギャラクス", type:"mech", base:{hp:86,atk:98,spd:82}, look:{shape:"dragon",pal:"mech",tier:3},
+    learnset:[{lv:1,move:"momentum"},{lv:1,move:"velocity"},{lv:1,move:"conserve"}], evo:null},
+  /* 波動ライン */
+  waverin:{name:"ウェイヴリン", type:"wave", base:{hp:46,atk:50,spd:60}, look:{shape:"wave",pal:"wave",tier:1},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"wavefront"},{lv:14,move:"doppler"}], evo:{to:"wavelord",lv:22}},
+  wavelord:{name:"ウェイヴロード", type:"wave", base:{hp:64,atk:76,spd:80}, look:{shape:"bird",pal:"wave",tier:2},
+    learnset:[{lv:1,move:"wavefront"},{lv:1,move:"doppler"},{lv:28,move:"photon"}], evo:null},
+  /* 熱ライン */
+  thermo:{name:"サーモ", type:"heat", base:{hp:52,atk:54,spd:48}, look:{shape:"flame",pal:"heat",tier:1},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"thermal"},{lv:14,move:"gaslaw"}], evo:{to:"thermion",lv:24}},
+  thermion:{name:"サーミオン", type:"heat", base:{hp:78,atk:78,spd:64}, look:{shape:"beast",pal:"heat",tier:2},
+    learnset:[{lv:1,move:"gaslaw"},{lv:1,move:"thermal"},{lv:30,move:"energyshot"}], evo:null},
+  /* 電磁気ライン */
+  voltin:{name:"ボルティン", type:"elec", base:{hp:44,atk:56,spd:58}, look:{shape:"bolt",pal:"elec",tier:1},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"ohm"},{lv:10,move:"wavefront"},{lv:16,move:"lorentz"}], evo:{to:"voltron",lv:16}},
+  voltron:{name:"ボルトロン", type:"elec", base:{hp:60,atk:74,spd:72}, look:{shape:"beast",pal:"elec",tier:2},
+    learnset:[{lv:1,move:"ohm"},{lv:1,move:"lorentz"},{lv:24,move:"photon"}], evo:{to:"voltdeus",lv:34}},
+  voltdeus:{name:"ボルトデウス", type:"elec", base:{hp:82,atk:94,spd:86}, look:{shape:"dragon",pal:"elec",tier:3},
+    learnset:[{lv:1,move:"lorentz"},{lv:1,move:"ohm"},{lv:1,move:"wavefront"}], evo:null},
+  /* 原子ライン */
+  atomin:{name:"アトミン", type:"atom", base:{hp:48,atk:54,spd:62}, look:{shape:"atom",pal:"atom",tier:1},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"photon"},{lv:14,move:"nuclear"}], evo:{to:"atomlord",lv:24}},
+  atomlord:{name:"アトムロード", type:"atom", base:{hp:70,atk:82,spd:78}, look:{shape:"bird",pal:"atom",tier:2},
+    learnset:[{lv:1,move:"nuclear"},{lv:1,move:"photon"},{lv:30,move:"lorentz"}], evo:null},
+  /* エネルギーライン */
+  enern:{name:"エネルン", type:"energy", base:{hp:55,atk:50,spd:52}, look:{shape:"core",pal:"energy",tier:1},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"energyshot"},{lv:12,move:"conserve"}], evo:{to:"enegon",lv:20}},
+  enegon:{name:"エネゴン", type:"energy", base:{hp:78,atk:68,spd:62}, look:{shape:"golem",pal:"energy",tier:2},
+    learnset:[{lv:1,move:"conserve"},{lv:1,move:"energyshot"},{lv:26,move:"velocity"}], evo:null},
+};
+
+/* 野生出現テーブル */
+const WILD = {
+  area1:["mechick","waverin","enern","voltin","thermo","atomin"],
+  area2:["mechion","voltron","waverin","thermion","atomin","enern"],
+  area3:["mechion","voltron","enegon","wavelord","atomlord","thermion"],
+};
+
+/* 対戦相手トレーナー（四天王＋物理王）。四天王は難問プールを出題(adminのhardフラグで制御) */
+const TRAINERS = [
+  {id:"t_kaze", name:"力学の風 カゼ", rank:1, color:"#4a8af0",
+   team:[{sp:"mechick",lv:9},{sp:"enern",lv:9},{sp:"waverin",lv:10}],
+   intro:"運動方程式、ちゃんと言える？ 力の基本から確かめよう。", lose:"見事だ。力と運動の理を掴んでいるね。"},
+  {id:"t_shio", name:"波のシオ", rank:2, color:"#4fd8c8", elite:true,
+   team:[{sp:"wavelord",lv:16},{sp:"voltron",lv:15},{sp:"mechion",lv:16}],
+   intro:"波は難しいぞ。ドップラー、干渉、気柱…公式を使いこなせるか？", lose:"波の重なりを読み切ったか。たいしたものだ。"},
+  {id:"t_homura", name:"熱のホムラ", rank:3, color:"#f0566e", elite:true,
+   team:[{sp:"thermion",lv:22},{sp:"enegon",lv:21},{sp:"voltron",lv:22}],
+   intro:"気体と熱、計算は正確に。ボイル・シャルルを間違えるなよ。", lose:"熱力学を制したな。燃えるような実力だ。"},
+  {id:"t_rai", name:"雷のライ", rank:4, color:"#f0b73a", elite:true,
+   team:[{sp:"voltdeus",lv:28},{sp:"atomlord",lv:27},{sp:"mechion",lv:27}],
+   intro:"電磁気は物理の華。回路も磁場もローレンツ力も、全部見せてもらう。", lose:"雷を乗りこなしたか…君こそ電磁気の使い手だ。"},
+  {id:"t_genshi", name:"物理王 ゲンシ", rank:5, color:"#9a7cf0", elite:true,
+   team:[{sp:"mechgalaxy",lv:33},{sp:"voltdeus",lv:33},{sp:"atomlord",lv:32},{sp:"wavelord",lv:32}],
+   intro:"力学・波動・熱・電磁気・原子――全範囲の公式を修めし者よ。最後の試練だ！", lose:"……完璧だ。君は物理の全てを修めた、真の物理王だ。"},
+];
+
+/* 隠しボス: 全トレーナー撃破後に出現 */
+const ADMIN_TRAINER = {
+  id:"t_admin", name:"Administrator", rank:99, color:"#f0566e", admin:true, elite:true,
+  team:[{sp:"mechgalaxy",lv:46},{sp:"voltdeus",lv:46},{sp:"atomlord",lv:45},{sp:"wavelord",lv:45},{sp:"thermion",lv:44},{sp:"enegon",lv:44}],
+  intro:"ようこそ、物理の頂へ。全法則を統べる管理者として、最難関の問いを授けよう。",
+  lose:"……認証完了。宇宙の法則は、いま君のものだ。おめでとう。"
+};
+
+/* 四天王・物理王・Administrator が出す難問プール(分野別) */
+const ELITE_HARD = {
+  mech:"hard_mech", elec:"hard_elec", wave:"hard_wave", atom:"hard_atom", heat:"heat_adv", energy:"energy_adv"
+};
+
+const BOSS_LINES={};
+TRAINERS.forEach(t=>BOSS_LINES[t.id]={intro:t.intro,lose:t.lose});
+BOSS_LINES[ADMIN_TRAINER.id]={intro:ADMIN_TRAINER.intro,lose:ADMIN_TRAINER.lose};
+function adminUnlocked(){ return TRAINERS.every(t=>state.beaten.includes(t.id)); }
+
+</script>
+<script id="artScript">
+/* =========================================================
+   モンスターSVG生成器
+   見た目 = シェイプ × ティア × パレット × 種シード
+   ・shape: blob/beast/dragon/golem/sprite/bird
+   ・pal:   acid/base/neutral/indicator/titration/ion（2色＋アクセント）
+   ・tier:  1-3（大きさ・装飾・オーラ）
+   ・seed:  種ごとに目・模様・角などを決定論的に変える
+   差し替え: MON_IMG[speciesKey]=URL でき絵を上書き可能
+   ========================================================= */
+const MON_IMG={};
+const PALS={
+  mech:   {a:"#4a8af0", b:"#7fb0ff", c:"#cfe0ff", eye:"#07122e"},
+  wave:   {a:"#4fd8c8", b:"#8aeae0", c:"#d0fff8", eye:"#07302c"},
+  heat:   {a:"#f0566e", b:"#ff8aa0", c:"#ffd0d8", eye:"#3a0a12"},
+  elec:   {a:"#f0b73a", b:"#ffd47a", c:"#ffeec0", eye:"#3a2a07"},
+  atom:   {a:"#9a7cf0", b:"#c0a8f7", c:"#efd8ff", eye:"#2a0a3a"},
+  energy: {a:"#7fe0a0", b:"#a8f0c0", c:"#d8ffe6", eye:"#0a2e1a"},
+};
+/* 文字列→数値シード（決定論） */
+function seedOf(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+/* シードから0..n-1 */
+function sPick(seed,salt,n){return ((seed>>>salt)%n);}
+
+/* 目のバリエーション */
+function eyes(p,seed,cx,cy,sp){
+  const t=sPick(seed,3,4);
+  const E=p.eye;
+  if(t===0)return `<circle cx="${cx-sp}" cy="${cy}" r="2.4" fill="#fff"/><circle cx="${cx+sp}" cy="${cy}" r="2.4" fill="#fff"/><circle cx="${cx-sp}" cy="${cy}" r="1.2" fill="${E}"/><circle cx="${cx+sp}" cy="${cy}" r="1.2" fill="${E}"/>`;
+  if(t===1)return `<circle cx="${cx-sp}" cy="${cy}" r="1.7" fill="${E}"/><circle cx="${cx+sp}" cy="${cy}" r="1.7" fill="${E}"/>`;
+  if(t===2)return `<path d="M${cx-sp-2} ${cy} q2 -3 4 0" stroke="${E}" stroke-width="1.5" fill="none"/><path d="M${cx+sp-2} ${cy} q2 -3 4 0" stroke="${E}" stroke-width="1.5" fill="none"/>`;
+  return `<ellipse cx="${cx-sp}" cy="${cy}" rx="1.4" ry="2.4" fill="${E}"/><ellipse cx="${cx+sp}" cy="${cy}" rx="1.4" ry="2.4" fill="${E}"/><circle cx="${cx-sp}" cy="${cy-0.6}" r="0.5" fill="#fff"/><circle cx="${cx+sp}" cy="${cy-0.6}" r="0.5" fill="#fff"/>`;
+}
+/* 模様（体の装飾）: シードで種類変化 */
+function pattern(p,seed,cx,cy){
+  const t=sPick(seed,7,4);
+  if(t===0)return `<circle cx="${cx}" cy="${cy+4}" r="2.2" fill="${p.c}" opacity=".7"/>`;
+  if(t===1)return `<path d="M${cx-5} ${cy+5} h10" stroke="${p.c}" stroke-width="1.6" opacity=".6"/><path d="M${cx-4} ${cy+8} h8" stroke="${p.c}" stroke-width="1.4" opacity=".5"/>`;
+  if(t===2)return `<circle cx="${cx-4}" cy="${cy+5}" r="1.3" fill="${p.c}" opacity=".7"/><circle cx="${cx+4}" cy="${cy+5}" r="1.3" fill="${p.c}" opacity=".7"/><circle cx="${cx}" cy="${cy+8}" r="1.3" fill="${p.c}" opacity=".7"/>`;
+  return `<path d="M${cx} ${cy+2} l3 5 l-6 0 z" fill="${p.c}" opacity=".6"/>`;
+}
+/* オーラ（ティア3） */
+function aura(p,tier){ if(tier<3)return ""; return `<circle cx="20" cy="20" r="18" fill="${p.a}" opacity="0.10"/><circle cx="20" cy="20" r="18" fill="none" stroke="${p.b}" stroke-width="0.6" opacity="0.4" stroke-dasharray="2 3"/>`; }
+
+/* === シェイプ別 === */
+function shBlob(p,seed,tier){const wob=sPick(seed,5,3);
+  const body=`M20 ${9+wob} C${11-wob} ${9+wob} 8 18 8 23 C8 30 13 34 20 34 C27 34 32 30 32 23 C32 18 ${29+wob} ${9+wob} 20 ${9+wob} Z`;
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="9" ry="2" fill="rgba(0,0,0,.3)"/>
+   <path d="${body}" fill="${p.a}"/><path d="${body}" fill="url(#gg)"/>
+   <ellipse cx="20" cy="18" rx="9" ry="6" fill="${p.b}" opacity=".5"/>
+   ${pattern(p,seed,20,18)}${eyes(p,seed,20,19,4)}
+   <path d="M17 25 q3 2 6 0" stroke="${p.eye}" stroke-width="1.2" fill="none"/>`;}
+function shBeast(p,seed,tier){const ear=sPick(seed,9,2);
+  const earL=ear?`<path d="M11 12 L8 4 L15 10 Z" fill="${p.a}"/><path d="M29 12 L32 4 L25 10 Z" fill="${p.a}"/>`
+                 :`<circle cx="11" cy="9" r="3" fill="${p.a}"/><circle cx="29" cy="9" r="3" fill="${p.a}"/>`;
+  return `${aura(p,tier)}<ellipse cx="20" cy="36" rx="10" ry="2" fill="rgba(0,0,0,.3)"/>
+   ${earL}<ellipse cx="20" cy="22" rx="12" ry="11" fill="${p.a}"/><ellipse cx="20" cy="22" rx="12" ry="11" fill="url(#gg)"/>
+   <ellipse cx="20" cy="24" rx="7" ry="6" fill="${p.b}" opacity=".55"/>
+   ${pattern(p,seed,20,20)}${eyes(p,seed,20,20,5)}
+   <path d="M16 27 q4 3 8 0" stroke="${p.eye}" stroke-width="1.3" fill="none"/>
+   <path d="M20 23 l-2 3 h4 z" fill="${p.eye}"/>
+   <path d="M9 30 l-3 4 M31 30 l3 4" stroke="${p.a}" stroke-width="2.5" stroke-linecap="round"/>`;}
+function shDragon(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="36" rx="10" ry="2" fill="rgba(0,0,0,.3)"/>
+   <path d="M6 20 Q2 14 7 12 Q6 18 11 19 Z" fill="${p.b}"/><path d="M34 20 Q38 14 33 12 Q34 18 29 19 Z" fill="${p.b}"/>
+   <path d="M20 6 L17 11 L23 11 Z" fill="${p.c}"/>
+   <ellipse cx="20" cy="22" rx="11" ry="12" fill="${p.a}"/><ellipse cx="20" cy="22" rx="11" ry="12" fill="url(#gg)"/>
+   <path d="M20 10 L16 16 h8 Z" fill="${p.b}"/>
+   <path d="M14 14 l-2 -5 l4 3 Z M26 14 l2 -5 l-4 3 Z" fill="${p.c}"/>
+   ${pattern(p,seed,20,22)}${eyes(p,seed,20,19,5)}
+   <path d="M15 26 q5 3 10 0" stroke="${p.eye}" stroke-width="1.4" fill="none"/>
+   <path d="M17 23 l-2 2 M23 23 l2 2" stroke="#fff" stroke-width="1.2"/>`;}
+function shGolem(p,seed,tier){const crack=sPick(seed,11,2);
+  return `${aura(p,tier)}<ellipse cx="20" cy="36" rx="11" ry="2" fill="rgba(0,0,0,.3)"/>
+   <rect x="8" y="10" width="24" height="24" rx="4" fill="${p.a}"/><rect x="8" y="10" width="24" height="24" rx="4" fill="url(#gg)"/>
+   <rect x="12" y="14" width="16" height="10" rx="2" fill="${p.b}" opacity=".5"/>
+   ${crack?`<path d="M14 24 l3 4 l-2 3" stroke="${p.c}" stroke-width="1" fill="none" opacity=".6"/>`:`<circle cx="14" cy="29" r="1.5" fill="${p.c}" opacity=".6"/><circle cx="26" cy="29" r="1.5" fill="${p.c}" opacity=".6"/>`}
+   ${eyes(p,seed,20,19,5)}<path d="M16 26 h8" stroke="${p.eye}" stroke-width="1.4"/>
+   <rect x="5" y="16" width="3" height="10" rx="1.5" fill="${p.a}"/><rect x="32" y="16" width="3" height="10" rx="1.5" fill="${p.a}"/>`;}
+function shSprite(p,seed,tier){const ring=sPick(seed,13,2);
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="7" ry="1.8" fill="rgba(0,0,0,.25)"/>
+   ${ring?`<circle cx="20" cy="20" r="13" fill="none" stroke="${p.b}" stroke-width="1" opacity=".5" stroke-dasharray="3 3"/>`:`<circle cx="20" cy="20" r="12" fill="none" stroke="${p.b}" stroke-width="1" opacity=".4"/>`}
+   <circle cx="20" cy="20" r="8" fill="${p.a}"/><circle cx="20" cy="20" r="8" fill="url(#gg)"/>
+   <circle cx="20" cy="18" r="4" fill="${p.c}" opacity=".5"/>
+   ${eyes(p,seed,20,20,3.5)}
+   <circle cx="9" cy="14" r="1.6" fill="${p.b}"/><circle cx="31" cy="14" r="1.6" fill="${p.b}"/><circle cx="12" cy="28" r="1.3" fill="${p.c}"/><circle cx="28" cy="28" r="1.3" fill="${p.c}"/>`;}
+function shBird(p,seed,tier){const tail=sPick(seed,15,2);
+  return `${aura(p,tier)}<ellipse cx="20" cy="36" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <path d="M7 20 Q0 16 3 26 Q8 24 12 24 Z" fill="${p.b}"/><path d="M33 20 Q40 16 37 26 Q32 24 28 24 Z" fill="${p.b}"/>
+   ${tail?`<path d="M20 32 l-4 6 h8 Z" fill="${p.b}"/>`:`<path d="M16 33 l-2 5 M24 33 l2 5 M20 34 v5" stroke="${p.b}" stroke-width="2" stroke-linecap="round"/>`}
+   <ellipse cx="20" cy="20" rx="9" ry="11" fill="${p.a}"/><ellipse cx="20" cy="20" rx="9" ry="11" fill="url(#gg)"/>
+   <path d="M20 8 L17 4 L20 6 L23 4 Z" fill="${p.c}"/>
+   ${pattern(p,seed,20,20)}${eyes(p,seed,20,17,4)}
+   <path d="M20 21 l-3 3 h6 Z" fill="${p.c}"/>`;}
+
+/* === 物理モチーフのシェイプ === */
+function shOrbit(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <ellipse cx="20" cy="20" rx="14" ry="6" fill="none" stroke="${p.b}" stroke-width="1.4" transform="rotate(25 20 20)"/>
+   <ellipse cx="20" cy="20" rx="14" ry="6" fill="none" stroke="${p.b}" stroke-width="1.4" transform="rotate(-35 20 20)"/>
+   <circle cx="20" cy="20" r="8" fill="${p.a}"/><circle cx="20" cy="18" r="4" fill="${p.c}" opacity=".5"/>
+   ${eyes(p,seed,20,20,4)}<path d="M16 25 q4 2 8 0" stroke="${p.eye}" stroke-width="1.3" fill="none"/>
+   <circle cx="33" cy="15" r="2.4" fill="${p.b}"/><circle cx="7" cy="26" r="2" fill="${p.c}"/>`;}
+function shWave(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <path d="M4 14 q4 -5 8 0 t8 0 t8 0" fill="none" stroke="${p.b}" stroke-width="1.6" opacity=".7"/>
+   <circle cx="20" cy="22" r="9" fill="${p.a}"/><circle cx="20" cy="22" r="9" fill="url(#gg)"/>
+   <path d="M11 22 q4.5 -6 9 0 t9 0" fill="none" stroke="${p.c}" stroke-width="1.6"/>
+   ${eyes(p,seed,20,20,4)}<path d="M16 26 q4 2 8 0" stroke="${p.eye}" stroke-width="1.3" fill="none"/>`;}
+function shFlame(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <path d="M20 4 C14 12 12 16 12 22 a8 8 0 0 0 16 0 C28 16 26 12 20 4Z" fill="${p.a}"/>
+   <path d="M20 10 C17 15 16 18 16 22 a4 4 0 0 0 8 0 C24 18 23 15 20 10Z" fill="${p.c}" opacity=".7"/>
+   ${eyes(p,seed,20,21,4)}<path d="M16 26 q4 2 8 0" stroke="${p.eye}" stroke-width="1.3" fill="none"/>
+   <path d="M9 10 q-2 3 0 5 M31 10 q2 3 0 5" stroke="${p.b}" stroke-width="1.4" fill="none" opacity=".6"/>`;}
+function shBolt(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <circle cx="20" cy="20" r="9" fill="${p.a}"/><circle cx="20" cy="20" r="9" fill="url(#gg)"/>
+   <path d="M22 8 L14 21 L19 21 L17 32 L27 18 L21 18 Z" fill="${p.c}" stroke="${p.b}" stroke-width="0.6"/>
+   ${eyes(p,seed,20,19,5)}
+   <path d="M5 13 l4 3 l-4 2 M35 13 l-4 3 l4 2" fill="none" stroke="${p.b}" stroke-width="1.3" opacity=".6"/>`;}
+function shAtomMon(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <ellipse cx="20" cy="20" rx="14" ry="5" fill="none" stroke="${p.b}" stroke-width="1.2"/>
+   <ellipse cx="20" cy="20" rx="14" ry="5" fill="none" stroke="${p.b}" stroke-width="1.2" transform="rotate(60 20 20)"/>
+   <ellipse cx="20" cy="20" rx="14" ry="5" fill="none" stroke="${p.b}" stroke-width="1.2" transform="rotate(-60 20 20)"/>
+   <circle cx="20" cy="20" r="6.5" fill="${p.a}"/>
+   ${eyes(p,seed,20,20,3.5)}<path d="M17 24 q3 2 6 0" stroke="${p.eye}" stroke-width="1.2" fill="none"/>
+   <circle cx="34" cy="20" r="2" fill="${p.c}"/><circle cx="6" cy="20" r="2" fill="${p.c}"/>`;}
+function shCore(p,seed,tier){
+  return `${aura(p,tier)}<ellipse cx="20" cy="35" rx="8" ry="2" fill="rgba(0,0,0,.3)"/>
+   <circle cx="20" cy="20" r="13" fill="none" stroke="${p.b}" stroke-width="1" opacity=".4" stroke-dasharray="3 3"/>
+   <circle cx="20" cy="20" r="9" fill="${p.a}"/><circle cx="20" cy="20" r="9" fill="url(#gg)"/>
+   <circle cx="20" cy="20" r="4.5" fill="${p.c}"/>
+   ${eyes(p,seed,20,20,4)}<path d="M16 25 q4 2 8 0" stroke="${p.eye}" stroke-width="1.3" fill="none"/>
+   <path d="M20 7 v4 M20 29 v4 M7 20 h4 M29 20 h4" stroke="${p.b}" stroke-width="1.4"/>`;}
+
+const SHAPES={blob:shBlob,beast:shBeast,dragon:shDragon,golem:shGolem,sprite:shSprite,bird:shBird,
+  orbit:shOrbit,wave:shWave,flame:shFlame,bolt:shBolt,atom:shAtomMon,core:shCore};
+
+/* 種(species key)から見た目を生成 */
+function monSVG(spKey){
+  if(MON_IMG[spKey])return `<img src="${MON_IMG[spKey]}" alt="">`;
+  const sp=SPECIES[spKey]; if(!sp)return "";
+  const look=sp.look||{shape:"blob",pal:"acid",tier:1};
+  const p=PALS[look.pal]||PALS.acid;
+  const seed=seedOf(spKey);
+  const draw=SHAPES[look.shape]||shBlob;
+  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,255,255,.35)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+    ${draw(p,seed,look.tier||1)}</svg>`;
+}
+/* トレーナー用アバター */
+function trainerSVG(color){return `<svg viewBox="0 0 40 46" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16263f"/><stop offset="1" stop-color="#0a1420"/></linearGradient></defs>
+  <rect width="40" height="46" fill="url(#tg)"/><circle cx="20" cy="16" r="9" fill="#e7c8a4"/>
+  <path d="M10 15 Q10 5 20 5 Q30 5 30 15 L28 13 Q20 9 12 13 Z" fill="${color}"/>
+  <circle cx="16" cy="16" r="1.5" fill="#26304a"/><circle cx="24" cy="16" r="1.5" fill="#26304a"/>
+  <path d="M17 20 q3 2 6 0" stroke="#b07a52" stroke-width="1.2" fill="none"/>
+  <rect x="8" y="26" width="24" height="20" rx="5" fill="${color}"/><rect x="15" y="26" width="10" height="20" fill="rgba(255,255,255,.14)"/></svg>`;}
+/* 主人公 */
+function heroSVG(){return `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="16" cy="29" rx="8" ry="2.2" fill="rgba(0,0,0,.35)"/>
+  <rect x="11" y="4" width="10" height="8" rx="3" fill="#e7c8a4"/><rect x="10" y="3" width="12" height="3.6" rx="2" fill="#34406a"/>
+  <rect x="12.5" y="7" width="2" height="1.5" fill="#26304a"/><rect x="17.5" y="7" width="2" height="1.5" fill="#26304a"/>
+  <rect x="9" y="12" width="14" height="12" rx="4" fill="#2f9f8f"/><rect x="14" y="12" width="4" height="12" fill="rgba(255,255,255,.18)"/>
+  <rect x="11" y="24" width="3.4" height="6" rx="1.4" fill="#26304a"/><rect x="17.6" y="24" width="3.4" height="6" rx="1.4" fill="#26304a"/>
+  <circle cx="24" cy="15" r="3" fill="#f0b73a"/><rect x="23" y="15" width="2" height="7" fill="#9fb0c8"/></svg>`;}
+function heroPortrait(){return `<svg viewBox="0 0 38 46" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="hp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16263f"/><stop offset="1" stop-color="#0a1420"/></linearGradient></defs>
+  <rect width="38" height="46" fill="url(#hp)"/><circle cx="19" cy="15" r="9" fill="#e7c8a4"/>
+  <rect x="9" y="5" width="20" height="7" rx="3" fill="#34406a"/><rect x="14" y="13" width="3" height="2" fill="#26304a"/><rect x="21" y="13" width="3" height="2" fill="#26304a"/>
+  <rect x="7" y="25" width="24" height="21" rx="5" fill="#2f9f8f"/><rect x="15" y="25" width="8" height="21" fill="rgba(255,255,255,.14)"/></svg>`;}
+
+</script>
+<script id="engineScript">
+/* =========================================================
+   フィジカモンスター ― エンジン（1ファイル・ローカル保存）
+   ポケモン形式: 手持ち最大6 / 技=クイズ / 属性相性+コンボ / 育成・進化・捕獲
+   非同期対戦: トレーナー編成に挑戦（loadOpponents/saveMyTeamで後日クラウド化）
+   ========================================================= */
+function $id(i){return document.getElementById(i);}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* =========================================================
+   保存・非同期対戦のDBレイヤー
+   ・トレーナー名をキーにセーブ管理
+   ・FIREBASE_CONFIG が設定されていれば Firestore に同期、
+     未設定ならすべて localStorage で完結（授業前の試用でも壊れない）
+   ・ゲーム状態は即時にローカル保存し、クラウドへは裏で同期(fire-and-forget)
+   ========================================================= */
+const SAVE_KEY="physmon_save_v1";
+const TEAM_KEY="physmon_teams_v1";
+const CURNAME_KEY="physmon_curname";
+let FB=null;
+function initFirebase(){
+  try{
+    if(typeof FIREBASE_CONFIG==="undefined" || !FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) return false;
+    if(typeof firebase==="undefined") return false;
+    if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    FB=firebase.firestore(); return true;
+  }catch(e){ FB=null; return false; }
+}
+function cloudOn(){ return !!FB; }
+function persist(){return {name:state.name,party:state.party,box:state.box,gold:state.gold,bag:state.bag,
+  dex:state.dex,badges:state.badges,beaten:state.beaten,wins:state.wins,losses:state.losses,flags:state.flags,area:state.area,ts:Date.now()};}
+function saveState(){
+  const data=persist();
+  try{ localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+       if(state.name)localStorage.setItem("physmon_save_"+state.name,JSON.stringify(data));
+       if(state.name)localStorage.setItem(CURNAME_KEY,state.name); }catch(e){}
+  if(FB&&state.name){ FB.collection("phys_saves").doc(state.name).set(data).catch(()=>{}); }
+  if(state.party&&state.party.length) saveMyTeam(true);
+}
+function loadSave(){ try{const s=localStorage.getItem(SAVE_KEY);return s?JSON.parse(s):null;}catch(e){return null;} }
+function loadSaveByName(name){ try{const s=localStorage.getItem("physmon_save_"+name);return s?JSON.parse(s):null;}catch(e){return null;} }
+function fetchCloudSave(name,cb){ if(!FB){cb&&cb(null);return;}
+  FB.collection("phys_saves").doc(name).get().then(d=>cb&&cb(d.exists?d.data():null)).catch(()=>cb&&cb(null)); }
+function myTeamEntry(){
+  return { id:"P_"+(state.name||"trainer"), name:state.name||"トレーナー", color:"#4fd8c8", player:true,
+    team:(state.party||[]).map(m=>({sp:m.sp,lv:m.lv})),
+    wins:state.wins||0, losses:state.losses||0, badges:(state.badges||[]).length, registeredAt:Date.now() };
+}
+function saveMyTeam(silent){
+  const entry=myTeamEntry();
+  try{ const all=JSON.parse(localStorage.getItem(TEAM_KEY)||"[]");
+    const i=all.findIndex(e=>e.id===entry.id); if(i>=0)all[i]=entry; else all.push(entry);
+    localStorage.setItem(TEAM_KEY,JSON.stringify(all)); }catch(e){}
+  if(FB&&state.name){ FB.collection("phys_teams").doc(state.name).set(entry).catch(()=>{}); }
+  if(!silent)toast("📋 編成『"+entry.name+"』を登録しました！");
+  return true;
+}
+let OPP_CACHE=null;
+function loadOpponents(){
+  let players=[]; try{players=JSON.parse(localStorage.getItem(TEAM_KEY)||"[]");}catch(e){}
+  players=players.filter(p=>p.team&&p.team.length);
+  if(FB){ FB.collection("phys_teams").get().then(snap=>{ const arr=[];snap.forEach(d=>{const x=d.data();if(x.team&&x.team.length)arr.push(x);});
+    try{localStorage.setItem(TEAM_KEY,JSON.stringify(arr));}catch(e){} OPP_CACHE=arr; }).catch(()=>{}); }
+  const base = OPP_CACHE || players;
+  return {cpu:TRAINERS, players:base.filter(p=>p.team&&p.team.length)};
+}
+function recordResult(win){ if(win)state.wins=(state.wins||0)+1; else state.losses=(state.losses||0)+1; saveState(); }
+function bumpCpuRecord(id,playerWon){
+  try{ const k="physmon_cpurec"; const rec=JSON.parse(localStorage.getItem(k)||"{}");
+    rec[id]=rec[id]||{wins:0,losses:0};
+    if(playerWon)rec[id].losses++; else rec[id].wins++;
+    localStorage.setItem(k,JSON.stringify(rec));
+    if(FB){ const t=TRAINERS.find(t=>t.id===id); FB.collection("phys_teams").doc("CPU_"+id).set({id:"CPU_"+id,name:(t?t.name:id),
+      cpu:true,wins:rec[id].wins,losses:rec[id].losses,color:(t?t.color:"#9a7cf0")},{merge:true}).catch(()=>{}); }
+  }catch(e){}
+}
+function loadRanking(cb){
+  function localRank(){
+    let players=[]; try{players=JSON.parse(localStorage.getItem(TEAM_KEY)||"[]");}catch(e){}
+    let cpurec={}; try{cpurec=JSON.parse(localStorage.getItem("physmon_cpurec")||"{}");}catch(e){}
+    const cpu=TRAINERS.map(t=>({name:t.name,color:t.color,cpu:true,wins:(cpurec[t.id]||{}).wins||0,losses:(cpurec[t.id]||{}).losses||0}));
+    const pl=players.filter(p=>p.player).map(p=>({name:p.name,color:p.color||"#4fd8c8",player:true,wins:p.wins||0,losses:p.losses||0,badges:p.badges||0}));
+    return [...pl,...cpu].sort((a,b)=>(b.wins-a.wins)||(a.losses-b.losses));
+  }
+  if(FB){ FB.collection("phys_teams").orderBy("wins","desc").limit(50).get().then(snap=>{
+    const arr=[];snap.forEach(d=>arr.push(d.data()));
+    if(arr.length)cb(arr.map(e=>({name:e.name,color:e.color||"#4fd8c8",player:!e.cpu,cpu:!!e.cpu,wins:e.wins||0,losses:e.losses||0,badges:e.badges||0})));
+    else cb(localRank());
+  }).catch(()=>cb(localRank())); }
+  else cb(localRank());
+}
+
+/* ===== 状態 ===== */
+let state;
+function freshState(name){return{
+  name:name||"", party:[], box:[], gold:0, bag:{ball:5,potion:3,bigpotion:0},
+  dex:[], badges:[], beaten:[], wins:0, losses:0, flags:{}, area:0, px:0, py:0, started:false,
+};}
+
+/* ===== モンスター個体生成 ===== */
+function statAt(bs,lv){return Math.floor(bs*lv/50)+5;}
+function hpAt(bs,lv){return Math.floor(bs*lv/50)+lv+10;}
+function makeMon(spKey,lv){
+  const sp=SPECIES[spKey];
+  const moves=[]; sp.learnset.forEach(l=>{if(l.lv<=lv&&!moves.includes(l.move))moves.push(l.move);});
+  while(moves.length>4)moves.shift();
+  const mon={sp:spKey,lv,exp:0,moves,
+    maxhp:hpAt(sp.base.hp,lv),hp:hpAt(sp.base.hp,lv),
+    atk:statAt(sp.base.atk,lv),spd:statAt(sp.base.spd,lv)};
+  return mon;
+}
+function expToNext(lv){return Math.round(lv*lv*5+lv*10+15);}
+function recalcMon(m){const sp=SPECIES[m.sp];const r=m.hp/m.maxhp;
+  m.maxhp=hpAt(sp.base.hp,m.lv);m.hp=Math.max(1,Math.round(m.maxhp*r));
+  m.atk=statAt(sp.base.atk,m.lv);m.spd=statAt(sp.base.spd,m.lv);}
+function healAll(){state.party.forEach(m=>{m.hp=m.maxhp;});}
+function firstAlive(team){return team.find(m=>m.hp>0);}
+
+/* ===== 図鑑 ===== */
+function dexAdd(spKey){if(!state.dex.includes(spKey)){state.dex.push(spKey);}}
+
+/* ===== マップ（3エリア + 道場/ジム拠点） ===== */
+const TILE=34;
+let AREAS=[];
+function buildAreas(){
+  AREAS=[
+   {name:"力学の草原", kind:"wild", wild:"area1", lvRange:[2,6],
+    map:["##############","#............#","#..GG...GG...#","#............#","#.G..TT..G...#","#....TT......#","#............#","#..GG...GG.H.#","#............#","#.....>......#","##############"]},
+   {name:"電磁気の森", kind:"wild", wild:"area2", lvRange:[8,14],
+    map:["##############","#.<..........#","#...GG..GG...#","#.G.......G..#","#....TT......#","#..G.TT..GG..#","#...........H#","#.GG....GG...#","#............#","#......>.....#","##############"]},
+   {name:"原子の神殿", kind:"wild", wild:"area3", lvRange:[16,24],
+    map:["##############","#.<..........#","#..GG...GG...#","#.G...TT..G..#","#.....TT.....#","#..GG.....GG.#","#..........H.#","#....GG......#","#.G.......G..#","#......>.....#","##############"]},
+   {name:"対戦アリーナ", kind:"arena",
+    map:["##############","#.R...Z....K.#","#..A.A.A.A.A.#","#............#","#.....VV.....#","#............#","#....<..S....#","#............#","##############"]},
+  ];
+}
+const POS={};
+function resolvePositions(){
+  for(let ai=0;ai<AREAS.length;ai++){const A=AREAS[ai],map=A.map;let next=null,prev=null,heal=null,shop=null,reg=null,rank=null,versus=null,admin=null;const arenas=[];
+    for(let y=0;y<map.length;y++)for(let x=0;x<map[0].length;x++){const c=map[y][x];
+      if(c===">")next={x,y}; if(c==="<")prev={x,y}; if(c==="H")heal={x,y}; if(c==="S")shop={x,y}; if(c==="A")arenas.push({x,y}); if(c==="R")reg={x,y}; if(c==="K")rank={x,y}; if(c==="V"&&(x===0||map[y][x-1]!=="V"))versus={x,y}; if(c==="Z")admin={x,y};}
+    POS[ai]={next,prev,heal,shop,arenas,reg,rank,versus,admin};}
+}
+function startTile(ai){const A=AREAS[ai],map=A.map;
+  // プレイヤー初期位置: 入口(prev)か中央付近の空き
+  const p=POS[ai].prev; if(p){return {x:p.x,y:p.y+1<map.length&&map[p.y+1][p.x]!=="#"?p.y+1:p.y};}
+  for(let y=1;y<map.length-1;y++)for(let x=1;x<map[0].length-1;x++)if(map[y][x]==="."||map[y][x]==="G")return {x,y};
+  return {x:1,y:1};}
+
+/* ===== 地形描画 ===== */
+const world=$id("world");
+const canvas=document.createElement("canvas");
+const ctx=canvas.getContext("2d");
+let MAP,COLS,ROWS;
+function walkable(x,y){if(x<0||y<0||x>=COLS||y>=ROWS)return false;return MAP[y][x]!=="#"&&MAP[y][x]!=="T";}
+function isGrass(x,y){return MAP[y]&&MAP[y][x]==="G";}
+function drawTile(t,X,Y,x,y){
+  const A=AREAS[state.area];
+  let base = A.kind==="arena" ? "#120a22" : "#0a1420";
+  ctx.fillStyle=((x+y)%2)?base:(A.kind==="arena"?"#160d28":"#0c1626");ctx.fillRect(X,Y,TILE,TILE);
+  ctx.strokeStyle="rgba(79,216,200,.05)";ctx.strokeRect(X+0.5,Y+0.5,TILE-1,TILE-1);
+  if(t==="#"){ctx.fillStyle="#14203c";ctx.fillRect(X,Y,TILE,TILE);ctx.fillStyle="#1c2a4a";ctx.fillRect(X+2,Y+2,TILE-4,TILE-4);ctx.fillStyle="rgba(79,216,200,.12)";ctx.fillRect(X+2,Y+2,TILE-4,2);}
+  else if(t==="G"){ctx.fillStyle="rgba(127,224,160,.16)";ctx.fillRect(X,Y,TILE,TILE);
+    ctx.strokeStyle="rgba(127,224,160,.5)";ctx.lineWidth=1.5;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(X+8+i*8,Y+26);ctx.lineTo(X+8+i*8,Y+18);ctx.stroke();}ctx.lineWidth=1;}
+  else if(t==="T"){ctx.fillStyle="#0e3a2a";ctx.fillRect(X+4,Y+6,TILE-8,TILE-8);ctx.fillStyle="#145a3a";ctx.beginPath();ctx.arc(X+TILE/2,Y+14,9,0,7);ctx.fill();ctx.fillStyle="#1c7a4a";ctx.beginPath();ctx.arc(X+TILE/2,Y+12,6,0,7);ctx.fill();}
+  else if(t===">"||t==="<"){ctx.fillStyle="rgba(240,183,58,.3)";ctx.fillRect(X+4,Y+4,TILE-8,TILE-8);ctx.strokeStyle="#f0b73a";ctx.lineWidth=2;ctx.strokeRect(X+4,Y+4,TILE-8,TILE-8);ctx.lineWidth=1;ctx.fillStyle="#f0b73a";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText(t===">"?"▶":"◀",X+TILE/2,Y+TILE/2+5);}
+  else if(t==="H"){ctx.fillStyle="rgba(127,224,160,.25)";ctx.fillRect(X+3,Y+3,TILE-6,TILE-6);ctx.strokeStyle="#7fe0a0";ctx.lineWidth=2;ctx.strokeRect(X+3,Y+3,TILE-6,TILE-6);ctx.lineWidth=1;ctx.fillStyle="#7fe0a0";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("✚",X+TILE/2,Y+TILE/2+4);}
+  else if(t==="S"){ctx.fillStyle="rgba(240,183,58,.22)";ctx.fillRect(X+3,Y+3,TILE-6,TILE-6);ctx.strokeStyle="#f0b73a";ctx.lineWidth=2;ctx.strokeRect(X+3,Y+3,TILE-6,TILE-6);ctx.lineWidth=1;ctx.fillStyle="#f0b73a";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("🛍",X+TILE/2,Y+TILE/2+4);}
+  else if(t==="A"){const g=ctx.createRadialGradient(X+TILE/2,Y+TILE/2,2,X+TILE/2,Y+TILE/2,TILE/2);g.addColorStop(0,"rgba(154,124,240,.5)");g.addColorStop(1,"rgba(154,124,240,0)");ctx.fillStyle=g;ctx.fillRect(X,Y,TILE,TILE);ctx.strokeStyle="#9a7cf0";ctx.lineWidth=1.5;ctx.strokeRect(X+6,Y+6,TILE-12,TILE-12);ctx.lineWidth=1;}
+  else if(t==="R"){ctx.fillStyle="rgba(79,216,200,.22)";ctx.fillRect(X+3,Y+3,TILE-6,TILE-6);ctx.strokeStyle="#4fd8c8";ctx.lineWidth=2;ctx.strokeRect(X+3,Y+3,TILE-6,TILE-6);ctx.lineWidth=1;ctx.fillStyle="#4fd8c8";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("📋",X+TILE/2,Y+TILE/2+4);}
+  else if(t==="K"){ctx.fillStyle="rgba(240,198,74,.22)";ctx.fillRect(X+3,Y+3,TILE-6,TILE-6);ctx.strokeStyle="#f0c64a";ctx.lineWidth=2;ctx.strokeRect(X+3,Y+3,TILE-6,TILE-6);ctx.lineWidth=1;ctx.fillStyle="#f0c64a";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("🏆",X+TILE/2,Y+TILE/2+4);}
+  else if(t==="V"){ctx.fillStyle="rgba(240,106,154,.22)";ctx.fillRect(X,Y+3,TILE,TILE-6);ctx.strokeStyle="#f06a9a";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X,Y+5);ctx.lineTo(X+TILE,Y+5);ctx.moveTo(X,Y+TILE-5);ctx.lineTo(X+TILE,Y+TILE-5);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle="#f06a9a";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("⚔",X+TILE/2,Y+TILE/2+4);}
+  else if(t==="Z"){ const on=(typeof adminUnlocked==="function")&&adminUnlocked();
+    if(on){const g=ctx.createRadialGradient(X+TILE/2,Y+TILE/2,2,X+TILE/2,Y+TILE/2,TILE/2);g.addColorStop(0,"rgba(240,86,110,.6)");g.addColorStop(1,"rgba(240,86,110,0)");ctx.fillStyle=g;ctx.fillRect(X,Y,TILE,TILE);ctx.strokeStyle="#f0566e";ctx.lineWidth=2;ctx.strokeRect(X+4,Y+4,TILE-8,TILE-8);ctx.lineWidth=1;ctx.fillStyle="#fff";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("⚡",X+TILE/2,Y+TILE/2+4);}
+    else{ctx.fillStyle="#1a1420";ctx.fillRect(X+4,Y+4,TILE-8,TILE-8);ctx.strokeStyle="#3a2535";ctx.lineWidth=2;ctx.strokeRect(X+4,Y+4,TILE-8,TILE-8);ctx.lineWidth=1;ctx.fillStyle="#5a3545";ctx.font="11px sans-serif";ctx.textAlign="center";ctx.fillText("🔒",X+TILE/2,Y+TILE/2+4);} }
+}
+function drawMap(){ctx.clearRect(0,0,canvas.width,canvas.height);for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)drawTile(MAP[y][x],x*TILE,y*TILE,x,y);}
+
+/* ===== スプライト ===== */
+const sprites={};
+function clearSprites(){for(const k in sprites){sprites[k].remove();delete sprites[k];}}
+function makeSprite(id,html,name,cls){const el=document.createElement("div");el.className="wsprite bob"+(cls?" "+cls:"");el.innerHTML=html;
+  if(name){const n=document.createElement("div");n.className="wname";n.textContent=name;el.appendChild(n);}world.appendChild(el);sprites[id]=el;return el;}
+function place(id,x,y){const el=sprites[id];if(!el)return;el.style.left=(x*TILE-1)+"px";el.style.top=(y*TILE-8)+"px";}
+function buildSprites(){clearSprites();const A=AREAS[state.area],rec=POS[state.area];
+  if(A.kind==="arena"){const opp=loadOpponents();
+    // トレーナー枠はCPU専用(バッジ・エンディング用)。順番に並べる。
+    rec.arenas.forEach((a,i)=>{const t=opp.cpu[i];if(t){const beaten=state.beaten.includes(t.id);
+      makeSprite("arena_"+i,trainerSVG(t.color||"#9a7cf0"),(beaten?"✓ ":"")+t.name,"trainer");place("arena_"+i,a.x,a.y);}});
+    if(rec.versus){makeSprite("versus",signSVG("#f06a9a","⚔"),"自由対戦","obj");place("versus",rec.versus.x,rec.versus.y);}
+    if(rec.admin&&adminUnlocked()){const beaten=state.beaten.includes(ADMIN_TRAINER.id);
+      makeSprite("admin",trainerSVG(ADMIN_TRAINER.color),(beaten?"✓ ":"⚡ ")+ADMIN_TRAINER.name,"trainer");place("admin",rec.admin.x,rec.admin.y);}
+    if(rec.shop){makeSprite("shop",shopSVG(),"補給ショップ","obj");place("shop",rec.shop.x,rec.shop.y);}
+    if(rec.reg){makeSprite("reg",signSVG("#4fd8c8","📋"),"編成登録","obj");place("reg",rec.reg.x,rec.reg.y);}
+    if(rec.rank){makeSprite("rank",signSVG("#f0c64a","🏆"),"ランキング","obj");place("rank",rec.rank.x,rec.rank.y);}
+  }
+  makeSprite("player",heroSVG(),null);place("player",state.px,state.py);}
+function signSVG(color,emoji){return `<svg viewBox="0 0 32 32"><rect x="7" y="6" width="18" height="14" rx="2" fill="#16263f" stroke="${color}" stroke-width="1.5"/><rect x="15" y="20" width="2" height="8" fill="#2a3450"/><text x="16" y="16" font-size="9" text-anchor="middle">${emoji}</text></svg>`;}
+function shopSVG(){return `<svg viewBox="0 0 32 32"><rect x="6" y="12" width="20" height="16" rx="2" fill="#2a3450"/><rect x="6" y="8" width="20" height="5" fill="#f0b73a"/><rect x="9" y="16" width="5" height="8" fill="#4fd8c8"/><rect x="18" y="16" width="5" height="8" fill="#4fd8c8"/></svg>`;}
+
+/* ===== カメラ・ミニマップ ===== */
+const VW=520,VH=340;
+function camera(){let cx=state.px*TILE+TILE/2-VW/2,cy=state.py*TILE+TILE/2-VH/2;
+  cx=clamp(cx,0,Math.max(0,COLS*TILE-VW));cy=clamp(cy,0,Math.max(0,ROWS*TILE-VH));world.style.transform=`translate(${-cx}px,${-cy}px)`;}
+const mm=$id("minimap"),mmx=mm.getContext("2d");
+function drawMinimap(){const sx=mm.width/COLS,sy=mm.height/ROWS;mmx.clearRect(0,0,mm.width,mm.height);
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const t=MAP[y][x];let c="#0c1626";
+    if(t==="#")c="#14203c";else if(t==="G")c="#2e6a44";else if(t==="T")c="#145a3a";else if(t===">"||t==="<")c="#f0b73a";else if(t==="H")c="#7fe0a0";else if(t==="A")c="#9a7cf0";else if(t==="S")c="#f0b73a";else if(t==="R")c="#4fd8c8";else if(t==="K")c="#f0c64a";else if(t==="V")c="#f06a9a";else if(t==="Z")c=(typeof adminUnlocked==="function"&&adminUnlocked())?"#f0566e":"#3a2535";
+    mmx.fillStyle=c;mmx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));}
+  mmx.fillStyle="#fff";mmx.fillRect(state.px*sx,state.py*sy,Math.ceil(sx)+1,Math.ceil(sy)+1);}
+
+/* ===== エリアロード ===== */
+function loadArea(ai){state.area=ai;const A=AREAS[ai];MAP=A.map;COLS=MAP[0].length;ROWS=MAP.length;
+  canvas.width=COLS*TILE;canvas.height=ROWS*TILE;if(!canvas.parentNode)world.appendChild(canvas);
+  drawMap();buildSprites();$id("areaName").textContent=A.name;drawMinimap();playMusic(A.kind==="arena"?"arena":"field");}
+
+/* ===== HUD ===== */
+function refresh(){$id("pname").textContent=state.name||"トレーナー";
+  $id("gold").textContent=state.gold;$id("badges").textContent=state.badges.length;$id("dexn").textContent=state.dex.length;
+  const lead=state.party[0];
+  if(lead){$id("leadName").textContent=SPECIES[lead.sp].name+" Lv"+lead.lv;const r=lead.hp/lead.maxhp;
+    $id("leadHp").style.width=(r*100)+"%";$id("leadHp").style.background=r<0.3?"linear-gradient(90deg,#f0566e,#f06a9a)":"linear-gradient(90deg,#7fe0a0,#4fd8c8)";
+    $id("leadHpTxt").textContent=lead.hp+"/"+lead.maxhp;}
+}
+function log(msg){$id("log").innerHTML=msg;}
+
+/* ===== BGM/SFX ===== */
+let actx=null,mg=null,mTimer=null,curTrack=null,mi=0;
+function ensureAudio(){if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();mg=actx.createGain();mg.gain.value=state.flags.bgmOff?0:0.09;mg.connect(actx.destination);}catch(e){}}}
+function tone(f,d,type,g,dest){if(!actx)return;const o=actx.createOscillator(),gn=actx.createGain();o.type=type||"sine";o.frequency.value=f;gn.gain.setValueAtTime(0,actx.currentTime);gn.gain.linearRampToValueAtTime(g||0.12,actx.currentTime+0.01);gn.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+d);o.connect(gn);gn.connect(dest||actx.destination);o.start();o.stop(actx.currentTime+d);}
+const TRACKS={field:[523,587,659,523,784,659,587,440,494,523,659,587,523,0],
+  battle:[440,523,659,587,523,494,440,392,440,587,523,440,0],
+  arena:[330,392,494,587,494,392,330,294,330,494,392,330,0]};
+function playMusic(name){ensureAudio();if(!actx)return;if(curTrack===name&&mTimer)return;curTrack=name;clearInterval(mTimer);mi=0;const mel=TRACKS[name]||TRACKS.field;const step=name==="battle"?240:300;
+  mTimer=setInterval(()=>{if(state.flags.bgmOff)return;const f=mel[mi%mel.length];mi++;if(f>0){tone(f,step/1000*0.9,name==="battle"?"sawtooth":"sine",0.045,mg);tone(f/2,step/1000*0.9,"triangle",0.02,mg);}},step);}
+function sfx(k){ensureAudio();if(!actx||state.flags.bgmOff)return;
+  if(k==="hit"){tone(740,0.08,"sine",0.14);setTimeout(()=>tone(988,0.1,"sine",0.14),60);}
+  else if(k==="super"){[660,880,1180].forEach((f,i)=>setTimeout(()=>tone(f,0.1,"sine",0.15),i*60));}
+  else if(k==="weak"){tone(300,0.14,"sine",0.1);}
+  else if(k==="miss"){tone(170,0.2,"sawtooth",0.14);}
+  else if(k==="faint"){[400,300,200].forEach((f,i)=>setTimeout(()=>tone(f,0.16,"triangle",0.14),i*90));}
+  else if(k==="win"){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.14,"sine",0.15),i*90));}
+  else if(k==="level"){[392,523,659,880].forEach((f,i)=>setTimeout(()=>tone(f,0.12,"triangle",0.15),i*70));}
+  else if(k==="evo"){[330,392,494,659,784].forEach((f,i)=>setTimeout(()=>tone(f,0.18,"sine",0.14),i*120));}
+  else if(k==="catch"){[523,440,523,659].forEach((f,i)=>setTimeout(()=>tone(f,0.12,"sine",0.14),i*110));}
+  else if(k==="buy"){tone(880,0.06,"sine",0.12);setTimeout(()=>tone(1175,0.08,"sine",0.12),50);}
+}
+function toggleBgm(){ensureAudio();state.flags.bgmOff=!state.flags.bgmOff;if(mg)mg.gain.value=state.flags.bgmOff?0:0.09;$id("bgmBtn").textContent=state.flags.bgmOff?"♪̸":"♪";if(!state.flags.bgmOff&&curTrack){const t=curTrack;curTrack=null;playMusic(t);}}
+
+/* ===== 会話 ===== */
+let dlg=null;
+function startDialogue(name,color,lines,onEnd){dlg={lines,idx:0,onEnd};$id("portrait").innerHTML=trainerSVG(color);$id("dlgName").textContent=name;$id("dialogue").classList.add("show");$id("dlgText").textContent=lines[0];}
+function advanceDialogue(){if(!dlg)return;dlg.idx++;if(dlg.idx>=dlg.lines.length){$id("dialogue").classList.remove("show");const cb=dlg.onEnd;dlg=null;if(cb)cb();}else $id("dlgText").textContent=dlg.lines[dlg.idx];}
+
+/* ===== 移動 ===== */
+function uiOpen(){return $id("menu").classList.contains("show")||$id("shop").classList.contains("show")||$id("register").classList.contains("show")||$id("ranking").classList.contains("show")||$id("versus").classList.contains("show")||$id("titlescreen").style.display!=="none"||$id("battle").style.display==="block"||$id("ending").classList.contains("show")||$id("starterModal").classList.contains("show");}
+function tryMove(dx,dy){
+  if(dlg||uiOpen())return;
+  const nx=state.px+dx,ny=state.py+dy;const A=AREAS[state.area],rec=POS[state.area];
+  // アリーナ: トレーナー/ショップ
+  if(A.kind==="arena"){
+    const ai=rec.arenas.findIndex(a=>a.x===nx&&a.y===ny);
+    if(ai>=0){const opp=loadOpponents();const t=opp.cpu[ai];if(t){challengeTrainer(t);return;}}
+    if(rec.admin&&rec.admin.x===nx&&rec.admin.y===ny){
+      if(!adminUnlocked()){toast("🔒 5人のトレーナー全員を倒すと現れる…");sfx("miss");return;}
+      challengeTrainer(ADMIN_TRAINER);return;}
+    if(rec.versus&&(rec.versus.x===nx||rec.versus.x+1===nx)&&rec.versus.y===ny){openVersus();return;}
+    if(rec.shop&&rec.shop.x===nx&&rec.shop.y===ny){openShop();return;}
+    if(rec.reg&&rec.reg.x===nx&&rec.reg.y===ny){openRegister();return;}
+    if(rec.rank&&rec.rank.x===nx&&rec.rank.y===ny){openRanking();return;}
+  }
+  const t=(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)?MAP[ny][nx]:"#";
+  if(t===">"){changeArea(state.area+1,"prev");return;}
+  if(t==="<"){changeArea(state.area-1,"next");return;}
+  if(t==="H"){healAll();refresh();saveState();toast("✚ 手持ちが全回復した！");sfx("level");return;}
+  if(t==="S"){openShop();return;}
+  if(!walkable(nx,ny))return;
+  state.px=nx;state.py=ny;place("player",nx,ny);camera();drawMinimap();
+  // 草むらエンカウント
+  if(isGrass(nx,ny)&&Math.random()<0.18){wildEncounter();}
+}
+function changeArea(ai,entrySide){ if(ai<0||ai>=AREAS.length)return;
+  const rec=POS[ai]; const target= entrySide==="prev"?rec.prev:rec.next;
+  loadArea(ai);
+  if(target){state.px=target.x; state.py=target.y+ (target.y+1<ROWS&&MAP[target.y+1][target.x]!=="#"?1:0);}
+  else {const s=startTile(ai);state.px=s.x;state.py=s.y;}
+  if(!walkable(state.px,state.py)){const s=startTile(ai);state.px=s.x;state.py=s.y;}
+  place("player",state.px,state.py);camera();drawMinimap();refresh();saveState();
+  log('<span class="sys">▶ </span>『'+AREAS[ai].name+'』に移動した。'+(AREAS[ai].kind==="arena"?'トレーナーに挑戦しよう！':'草むらで野生モンスターに出会える。'));
+}
+
+/* ===== バトル ===== */
+let B=null; // battle state
+function wildEncounter(){
+  const A=AREAS[state.area];const key=pick2(SPECIES_WILD(A.wild));
+  const lv=ri(A.lvRange[0],A.lvRange[1]);const foe=makeMon(key,lv);
+  beginBattle({type:"wild",foe,foeTeam:[foe]});
+}
+function SPECIES_WILD(w){return WILD[w]||WILD.area1;}
+function pick2(a){return a[Math.floor(Math.random()*a.length)];}
+function challengeTrainer(t){
+  if(state.beaten.includes(t.id)){ // 再戦可
+    startDialogue(t.name,t.color||"#9a7cf0",["また挑戦だね、受けて立とう！"],()=>beginTrainerBattle(t)); return; }
+  startDialogue(t.name,t.color||"#9a7cf0",[ (BOSS_LINES[t.id]?BOSS_LINES[t.id].intro:"勝負だ！") ],()=>beginTrainerBattle(t));
+}
+function beginTrainerBattle(t){
+  const foeTeam=t.team.map(m=>makeMon(m.sp,m.lv));
+  beginBattle({type:"trainer",trainer:t,foeTeam,foe:foeTeam[0]});
+}
+function beginBattle(cfg){
+  if(!firstAlive(state.party)){toast("戦えるモンスターがいない！回復所(✚)へ");return;}
+  B={...cfg, myIdx:state.party.findIndex(m=>m.hp>0), turn:0, usedQ:[], combo:0, curQ:null, awaitMove:true, caught:false};
+  dexAdd(B.foe.sp);
+  $id("viewport").style.display="none";$id("battle").style.display="block";
+  $id("battle").classList.toggle("trainer",cfg.type==="trainer");
+  playMusic("battle");renderBattle();
+  const foeName=SPECIES[B.foe.sp].name;
+  log('<span class="sys">⚔ </span>'+(cfg.type==="trainer"?(cfg.trainer.name+'が勝負を仕掛けてきた！'):('野生の'+foeName+'が現れた！')));
+  showMoveMenu();
+}
+function myMon(){return state.party[B.myIdx];}
+function renderBattle(){
+  const foe=B.foe,my=myMon();
+  $id("foeName").textContent=SPECIES[foe.sp].name;
+  $id("foeLv").textContent="Lv"+foe.lv;
+  $id("foeType").innerHTML=typeBadge(SPECIES[foe.sp].type);
+  $id("foeArt").innerHTML=monSVG(foe.sp);
+  $id("foeHp").style.width=Math.max(0,foe.hp/foe.maxhp*100)+"%";
+  $id("myName").textContent=SPECIES[my.sp].name;
+  $id("myLv").textContent="Lv"+my.lv;
+  $id("myType").innerHTML=typeBadge(SPECIES[my.sp].type);
+  $id("myArt").innerHTML=monSVG(my.sp);
+  $id("myHp").style.width=Math.max(0,my.hp/my.maxhp*100)+"%";
+  $id("myHpTxt").textContent=my.hp+"/"+my.maxhp;
+  $id("myExp").style.width=(my.exp/expToNext(my.lv)*100)+"%";
+  $id("comboTag").textContent=B.combo>=2?("🔥"+B.combo):"";
+  // 控え表示
+  $id("partyDots").innerHTML=state.party.map((m,i)=>`<span class="pdot ${m.hp>0?'':'ko'} ${i===B.myIdx?'cur':''}" title="${SPECIES[m.sp].name}"></span>`).join("");
+}
+function typeBadge(tp){const T=TYPES[tp];return `<span class="tbadge" style="background:${T.color}22;border-color:${T.color};color:${T.color}">${T.name}</span>`;}
+function showMoveMenu(){
+  if(!B)return;
+  B.awaitMove=true;const my=myMon();const acts=$id("battleMenu");acts.innerHTML="";
+  my.moves.forEach(mk=>{const mv=MOVES[mk];const b=document.createElement("button");b.className="mvBtn";
+    b.innerHTML=`<b>${mv.name}</b><span class="mvmeta">${TYPES[mv.type].name}・威力${mv.power}</span>`;
+    b.onclick=()=>useMove(mk);acts.appendChild(b);});
+  // コマンド
+  const row=document.createElement("div");row.className="cmdRow";
+  const bag=document.createElement("button");bag.className="cmdBtn";bag.textContent="🎒 道具";bag.onclick=showBag;
+  const sw=document.createElement("button");sw.className="cmdBtn";sw.textContent="🔄 交代";sw.onclick=showSwitch;
+  const run=document.createElement("button");run.className="cmdBtn";run.textContent=B.type==="wild"?"🏃 逃げる":"―";if(B.type==="wild")run.onclick=tryRun;else run.disabled=true;
+  row.appendChild(bag);row.appendChild(sw);row.appendChild(run);acts.appendChild(row);
+  $id("quizArea").style.display="none";
+}
+function useMove(mk){
+  const mv=MOVES[mk];B.pendingMove=mk;
+  // クイズ出題。四天王・物理王・Administrator戦では難問プールを優先(その分野の難問、なければ通常)
+  let qkey=mv.qkey;
+  if(B.type==="trainer" && B.trainer && B.trainer.elite && typeof ELITE_HARD!=="undefined"){
+    const hard=ELITE_HARD[mv.type]; if(hard && QUESTIONS[hard]) qkey=hard;
+  }
+  const pool=QUESTIONS[qkey];let idxs=pool.map((_,i)=>i).filter(i=>!B.usedQ.includes(qkey+i));
+  if(idxs.length===0){B.usedQ=B.usedQ.filter(s=>!s.startsWith(qkey));idxs=pool.map((_,i)=>i);}
+  const qi=idxs[(Math.random()*idxs.length)|0];B.usedQ.push(qkey+qi);
+  let base=pool[qi];if(base.gen){try{base=base.gen();}catch(e){base={q:"(生成エラー)",correct:"-",wrong:["a","b","c"]};}}
+  const opts=shuffle([{t:base.correct,ok:true},...base.wrong.map(w=>({t:w,ok:false}))]);
+  B.curQ={opts};
+  $id("battleMenu").innerHTML="";
+  $id("quizArea").style.display="block";
+  $id("quizMove").innerHTML=`<b style="color:${TYPES[mv.type].color}">${mv.name}</b> ― 正解で発動！`;
+  $id("quizQ").textContent=base.q;
+  const box=$id("quizChoices");box.innerHTML="";
+  opts.forEach((o,i)=>{const b=document.createElement("button");b.className="qchoice";b.textContent=o.t;b.onclick=()=>answerMove(i,b);box.appendChild(b);});
+}
+/* ダメージ計算: 相手の最大HPに対する割合で設計しテンポ良く。
+   mine=true はプレイヤーの攻撃(与ダメ大きめ)、false は敵の攻撃(控えめ)。 */
+function calcDamage(mv,attacker,defender,mul,mine){
+  const dmax=defender.maxhp;
+  // 威力を割合に変換: 威力40で基準。プレイヤーは相手HPの約33%(等倍)、敵は約18%。
+  const base = mine ? 0.009 : 0.0052;      // 係数
+  let frac = mv.power * base;               // 威力ベースの割合
+  // レベル/攻撃力差を緩やかに反映(±25%程度)
+  const atkRatio = clamp(attacker.atk / Math.max(6, (SPECIES[defender.sp].base.atk*defender.lv/50+5)), 0.6, 1.6);
+  frac *= (0.75 + 0.25*atkRatio);
+  frac *= mul;                              // 相性
+  if(mine && B && B.combo>=3) frac *= 1.25; // コンボボーナス
+  if(mine && B && B.combo>=6) frac *= 1.15; // さらに
+  let dmg = Math.round(dmax * frac);
+  const floor = mine ? Math.max(4, Math.round(dmax*0.15)) : 3; // 最低保証(プレイヤーは下振れしすぎない)
+  return Math.max(floor, dmg);
+}
+function answerMove(i,btn){
+  document.querySelectorAll(".qchoice").forEach(b=>b.disabled=true);
+  const o=B.curQ.opts[i],mv=MOVES[B.pendingMove],my=myMon(),foe=B.foe;
+  if(o.ok){
+    B.combo++;btn.classList.add("correct");
+    // ダメージ計算
+    const mul=typeMul(mv.type,SPECIES[foe.sp].type);
+    let dmg=calcDamage(mv,my,foe,mul,true);
+    if(mul>=2){sfx("super");}else if(mul<=0.5){sfx("weak");}else{sfx("hit");}
+    const art=$id("foeArt");art.classList.add("hit");setTimeout(()=>art.classList.remove("hit"),300);
+    foe.hp=Math.max(0,foe.hp-dmg);renderBattle();
+    let eff=mul>=2?" 効果は抜群だ！":(mul<=0.5?" 効果はいまひとつ…":"");
+    log('正解！ '+SPECIES[my.sp].name+'の'+mv.name+'！ '+dmg+'ダメージ'+(B.combo>=3?'（コンボ）':'')+'。'+eff);
+    if(foe.hp<=0){setTimeout(foeFainted,700);}else{setTimeout(foeTurn,900);}
+  }else{
+    B.combo=0;btn.classList.add("wrong");sfx("miss");
+    B.curQ.opts.forEach((oo,idx)=>{if(oo.ok)document.querySelectorAll(".qchoice")[idx].classList.add("correct");});
+    log('不正解… '+SPECIES[my.sp].name+'は技を出せなかった！');
+    setTimeout(foeTurn,1400);
+  }
+}
+function foeTurn(){
+  if(!B)return;
+  const foe=B.foe,my=myMon();
+  if(foe.hp<=0){foeFainted();return;}
+  if(my.hp<=0){afterMyFaint();return;}
+  // 相手の技: ランダム、属性相性反映、命中はそこそこ
+  const fsp=SPECIES[foe.sp];const fmoves=foe.moves.length?foe.moves:["tackle"];const mk=pick2(fmoves);const mv=MOVES[mk];
+  const hitChance=0.8;
+  if(Math.random()<hitChance){
+    const mul=typeMul(mv.type,SPECIES[my.sp].type);
+    let dmg=calcDamage(mv,foe,my,mul,false);
+    my.hp=Math.max(0,my.hp-dmg);
+    if(mul>=2)sfx("super");else sfx("hit");
+    const art=$id("myArt");art.classList.add("hit");setTimeout(()=>art.classList.remove("hit"),300);
+    renderBattle();
+    let eff=mul>=2?" 効果は抜群だ！":(mul<=0.5?" 効果はいまひとつ…":"");
+    log('相手の'+SPECIES[foe.sp].name+'の'+mv.name+'！ '+dmg+'ダメージ。'+eff);
+    if(my.hp<=0){setTimeout(afterMyFaint,800);return;}
+  }else{ log('相手の'+SPECIES[foe.sp].name+'の攻撃は外れた！'); }
+  setTimeout(showMoveMenu,900);
+}
+function foeFainted(){
+  if(!B)return;
+  sfx("faint");const foe=B.foe,my=myMon();
+  log('<span class="sys">💥 </span>'+(B.type==="trainer"?"相手の":"野生の")+SPECIES[foe.sp].name+'を倒した！');
+  // 経験値
+  const gain=Math.round(SPECIES[foe.sp].base.hp*0.6+foe.lv*7+10);
+  grantExp(my,gain);
+  const gold=Math.round(foe.lv*6+ri(3,8));state.gold+=gold;
+  if(B.type==="trainer"){
+    // 次の相手
+    const idx=B.foeTeam.indexOf(B.foe);const nxt=B.foeTeam.slice(idx+1).find(m=>m.hp>0);
+    if(nxt){B.foe=nxt;setTimeout(()=>{renderBattle();log('相手は'+SPECIES[nxt.sp].name+'を繰り出した！');setTimeout(showMoveMenu,500);},900);return;}
+    // トレーナー撃破
+    setTimeout(()=>winTrainer(),900);return;
+  }
+  setTimeout(()=>{refresh();saveState();endBattle();},1100);
+}
+function winTrainer(){
+  const t=B.trainer;
+  const isAdmin=(t.id==="t_admin");
+  if(t.player){ toast("🏅 "+t.name+"の編成に勝利！"); } // 自由対戦: バッジ対象外、何度でも挑める
+  else if(isAdmin){ if(!state.beaten.includes(t.id)){state.beaten.push(t.id);} toast("⚡ <b>Administrator を撃破！</b> 塔の真の管理者だ！"); }
+  else if(!state.beaten.includes(t.id)){state.beaten.push(t.id);
+    if(!state.badges.includes(t.id)){state.badges.push(t.id);}toast("🏅 バッジ獲得！ "+t.name+"を倒した！");
+  }
+  // 勝敗記録: 自分の勝ち。CPU相手ならそのCPUの成績も更新
+  state.wins=(state.wins||0)+1;
+  if(t && t.id && !t.player) bumpCpuRecord(t.id, true);
+  sfx("win");saveState();
+  const lose=t.player?(t.lose||"参った！"):(BOSS_LINES[t.id]?BOSS_LINES[t.id].lose:"参った！");
+  // ランク5(博士)撃破で通常エンディング。Administrator撃破で真エンディング。
+  const isFinal=(t.id==="t_dr");
+  endBattle(()=>{startDialogue(t.name,t.color||"#9a7cf0",[lose],()=>{
+    if(isAdmin&&!state.flags.endingAdmin){state.flags.endingAdmin=true;playEnding(true);}
+    else if(isFinal&&!state.flags.ending){state.flags.ending=true;playEnding();}
+  });});
+}
+function afterMyFaint(){
+  sfx("faint");log(SPECIES[myMon().sp].name+'は倒れた…');
+  const nxt=state.party.findIndex(m=>m.hp>0);
+  if(nxt<0){ // 全滅＝敗北
+    if(B&&B.type==="trainer"&&B.trainer){ state.losses=(state.losses||0)+1; if(!B.trainer.player)bumpCpuRecord(B.trainer.id,false); }
+    setTimeout(()=>{toast("目の前が真っ暗になった…");healAll();backToHeal();},900); return; }
+  setTimeout(()=>{ showSwitch(true); },900);
+}
+function backToHeal(){ endBattle(); // 最寄りの回復可能エリアへ（簡易: 現エリア入口）
+  const s=startTile(state.area);state.px=s.x;state.py=s.y;place("player",state.px,state.py);camera();refresh();saveState();
+  log('<span class="sys">✚ </span>手持ちを回復した。回復所(✚)でいつでも全回復できる。'); }
+
+function grantExp(m,amount){
+  m.exp+=amount;let leveled=false,evolved=null;
+  while(m.exp>=expToNext(m.lv)){m.exp-=expToNext(m.lv);m.lv++;leveled=true;recalcMon(m);
+    // 技習得
+    SPECIES[m.sp].learnset.forEach(l=>{if(l.lv===m.lv&&!m.moves.includes(l.move)){if(m.moves.length<4)m.moves.push(l.move);else{m.moves.shift();m.moves.push(l.move);}toast("📘 "+SPECIES[m.sp].name+"は"+MOVES[l.move].name+"を覚えた！");}});
+    // 進化
+    const evo=SPECIES[m.sp].evo;if(evo&&m.lv>=evo.lv){evolved=evo.to;}
+  }
+  if(leveled){sfx("level");toast("⬆ "+SPECIES[m.sp].name+" は Lv"+m.lv+" に！");}
+  if(evolved){const from=m.sp;m.sp=evolved;recalcMon(m);dexAdd(evolved);sfx("evo");
+    // 進化先の技も補充
+    SPECIES[evolved].learnset.forEach(l=>{if(l.lv<=m.lv&&!m.moves.includes(l.move)){if(m.moves.length<4)m.moves.push(l.move);}});
+    toast("✨ おめでとう！ "+SPECIES[from].name+" は "+SPECIES[evolved].name+" に進化した！");}
+  renderBattle&&B&&renderBattle();
+}
+
+/* ===== 道具・交代・捕獲・逃走 ===== */
+function showBag(){
+  const acts=$id("battleMenu");acts.innerHTML="";
+  const items=[{k:"ball",label:"🔮 捕獲ボール",n:state.bag.ball,use:tryCatch,only:"wild"},
+    {k:"potion",label:"🧪 回復薬(+30)",n:state.bag.potion,use:()=>useHeal(30)},
+    {k:"bigpotion",label:"🧪 強回復薬(全快)",n:state.bag.bigpotion,use:()=>useHeal(999)}];
+  items.forEach(it=>{const b=document.createElement("button");b.className="mvBtn";b.innerHTML=`<b>${it.label}</b><span class="mvmeta">所持 ${it.n}</span>`;
+    b.disabled=it.n<=0||(it.only==="wild"&&B.type!=="wild");b.onclick=it.use;acts.appendChild(b);});
+  const back=document.createElement("button");back.className="cmdBtn";back.textContent="← 戻る";back.onclick=showMoveMenu;acts.appendChild(back);
+}
+function useHeal(amt){const my=myMon();if(my.hp>=my.maxhp){toast("HPは満タンだ");return;}
+  const key=amt>=999?"bigpotion":"potion";if(state.bag[key]<=0)return;state.bag[key]--;
+  my.hp=Math.min(my.maxhp,my.hp+amt);sfx("buy");renderBattle();log(SPECIES[my.sp].name+'のHPを回復した。');
+  setTimeout(foeTurn,800);}
+function showSwitch(forced){
+  const acts=$id("battleMenu");acts.innerHTML="";
+  $id("quizArea").style.display="none";
+  if(forced)log('次に戦うモンスターを選ぼう。');
+  state.party.forEach((m,i)=>{const b=document.createElement("button");b.className="mvBtn";
+    b.innerHTML=`<b>${SPECIES[m.sp].name}</b> Lv${m.lv}<span class="mvmeta">HP ${m.hp}/${m.maxhp}</span>`;
+    b.disabled=m.hp<=0||i===B.myIdx;b.onclick=()=>doSwitch(i,forced);acts.appendChild(b);});
+  if(!forced){const back=document.createElement("button");back.className="cmdBtn";back.textContent="← 戻る";back.onclick=showMoveMenu;acts.appendChild(back);}
+}
+function doSwitch(i,forced){B.myIdx=i;renderBattle();log(SPECIES[myMon().sp].name+'に交代した！');
+  if(forced){setTimeout(showMoveMenu,600);}else{setTimeout(foeTurn,700);}}
+function tryCatch(){
+  if(B.type!=="wild"){toast("トレーナーのモンスターは捕まえられない");return;}
+  if(state.bag.ball<=0){toast("ボールがない");return;}
+  state.bag.ball--;const foe=B.foe;
+  const rate=clamp(1-foe.hp/foe.maxhp,0,1)*0.6+0.25; // HPが低いほど捕まえやすい
+  $id("battleMenu").innerHTML="";log('🔮 捕獲ボールを投げた…！');
+  sfx("catch");
+  setTimeout(()=>{
+    if(Math.random()<rate){
+      const caught={...foe,hp:foe.maxhp}; // 捕獲時は全快の控えに
+      if(state.party.length<6)state.party.push(caught);else state.box.push(caught);
+      dexAdd(foe.sp);state.flags.caughtAny=true;
+      toast("🎉 "+SPECIES[foe.sp].name+"を捕まえた！");sfx("win");saveState();
+      setTimeout(()=>endBattle(),900);
+    }else{log('あと少し…！ '+SPECIES[foe.sp].name+'は飛び出した！');setTimeout(foeTurn,900);}
+  },800);
+}
+function tryRun(){ if(Math.random()<0.7){toast("うまく逃げ切れた");endBattle();}else{log('逃げられなかった！');setTimeout(foeTurn,700);} }
+function endBattle(after){$id("battle").style.display="none";$id("battle").classList.remove("trainer");$id("viewport").style.display="block";
+  const A=AREAS[state.area];playMusic(A.kind==="arena"?"arena":"field");B=null;refresh();drawMinimap();if(after)after();}
+
+/* ===== エンディング ===== */
+function playEnding(admin){
+  let lines;
+  if(admin){
+    lines=[`<div class="edArt">${monSVG(state.party[0]?state.party[0].sp:'mechgalaxy')}</div>`,
+     `<h2 style="color:var(--rose)">TRUE CLEAR ― 法則の管理者</h2>`,
+     `<div class="edLine">四天王と物理王を退け、さらに最強の<b>Administrator</b>をも打ち倒した。</div>`,
+     `<div class="edLine edDim">力学・波動・熱・電磁気・原子――物理の全法則を極めた者だけが到達できる頂。</div>`,
+     `<div class="edLine" style="color:var(--rose);margin-top:8px">宇宙の法則は、いまあなたのものだ。</div>`,
+     `<div class="edHead">― 倒したトレーナー ―</div>`,
+     ...TRAINERS.map(t=>`<div class="edLine edDim">🏅 ${t.name}</div>`),
+     `<div class="edLine edDim" style="color:var(--rose)">⚡ Administrator</div>`,
+     `<div class="edHead">― 冒険の記録 ―</div>`,
+     `<div class="edLine">図鑑登録 <b style="color:var(--cyan)">${state.dex.length}</b> / ${Object.keys(SPECIES).length}</div>`,
+     `<div class="edLine">通算成績 <b style="color:var(--amber)">${state.wins||0}勝 ${state.losses||0}敗</b></div>`,
+     `<div class="edLine">最強の相棒 <b style="color:var(--amber)">${state.party[0]?SPECIES[state.party[0].sp].name+" Lv"+state.party[0].lv:"―"}</b></div>`,
+     `<div class="edLine" style="margin:22px 0;font-size:18px;color:var(--rose)">★ CONGRATULATIONS ★</div>`];
+  } else {
+    lines=[`<div class="edArt">${monSVG(state.party[0]?state.party[0].sp:'mechgalaxy')}</div>`,
+     `<h2>物理マスターへの道 ― CLEAR</h2>`,
+     `<div class="edLine">あなたは力学・波動・熱・電磁気・原子の試練を越え、</div>`,
+     `<div class="edLine">四天王を退け、物理王ゲンシを打ち倒した。</div>`,
+     `<div class="edLine edDim">運動方程式が運動を描き、波が干渉し、電流が磁場を生み、光が粒子となる――</div>`,
+     `<div class="edLine edDim">物理の法則は、いまあなたのものだ。</div>`,
+     `<div class="edHead">― 獲得したバッジ ―</div>`,
+     ...TRAINERS.map(t=>`<div class="edLine edDim">${state.beaten.includes(t.id)?'🏅':'▫'} ${t.name}</div>`),
+     `<div class="edHead">― 冒険の記録 ―</div>`,
+     `<div class="edLine">図鑑登録 <b style="color:var(--cyan)">${state.dex.length}</b> / ${Object.keys(SPECIES).length}</div>`,
+     `<div class="edLine">最強の相棒 <b style="color:var(--amber)">${state.party[0]?SPECIES[state.party[0].sp].name+" Lv"+state.party[0].lv:"―"}</b></div>`,
+     `<div class="edLine" style="color:var(--rose);margin-top:10px">…だが、アリーナの奥に封印が解けた気配。<b>⚡の間</b>へ向かえ。</div>`,
+     `<div class="edLine" style="color:var(--cyan);margin-top:10px">あなたの編成は「対戦アリーナ」に登録された。</div>`,
+     `<div class="edLine edDim">クラスメイトの挑戦を待とう！</div>`,
+     `<div class="edLine" style="margin:22px 0;font-size:18px;color:var(--amber)">★ THANK YOU FOR PLAYING ★</div>`];
+  }
+  $id("edScroll").innerHTML=lines.join("");const ed=$id("ending");ed.classList.add("show");
+  requestAnimationFrame(()=>ed.classList.add("run"));setTimeout(()=>{$id("edClose").style.display="block";},5000);
+  saveMyTeam();
+}
+function closeEnding(){const ed=$id("ending");ed.classList.remove("show","run");$id("edClose").style.display="none";
+  const ai=AREAS.findIndex(a=>a.kind==="arena");loadArea(ai);const s=startTile(ai);state.px=s.x;state.py=s.y;place("player",state.px,state.py);camera();refresh();
+  log('<span class="sys">▶ </span>自由に再戦・育成できる。回復は各エリアの✚で。');}
+
+/* ===== 道具屋 ===== */
+const SHOPITEMS=[{k:"ball",name:"捕獲ボール",price:30,desc:"野生モンスターを捕まえる"},
+  {k:"potion",name:"回復薬",price:40,desc:"HPを30回復"},{k:"bigpotion",name:"強回復薬",price:120,desc:"HPを全回復"}];
+function openShop(){$id("shop").classList.add("show");renderShop();}
+function closeShop(){$id("shop").classList.remove("show");}
+function renderShop(){$id("shopGold").textContent=state.gold;
+  $id("shopList").innerHTML=SHOPITEMS.map(it=>`<div class="row"><div class="info">${it.name}<div class="sub">${it.desc} ／ ✦${it.price}</div></div><button class="actBtn" onclick="buyItem('${it.k}',${it.price})">買う</button></div>`).join("");}
+function buyItem(k,price){if(state.gold<price){toast("✦ 足りない");return;}state.gold-=price;state.bag[k]=(state.bag[k]||0)+1;sfx("buy");refresh();renderShop();saveState();toast("🛍 "+SHOPITEMS.find(i=>i.k===k).name+"を購入");}
+
+/* ===== 編成登録（いつでも更新可） ===== */
+function openRegister(){$id("register").classList.add("show");renderRegister();}
+function closeRegister(){$id("register").classList.remove("show");}
+function renderRegister(){
+  const entry=myTeamEntry();
+  let h=`<div class="note" style="margin-bottom:10px;">いまの手持ちを「<b style="color:var(--cyan)">${entry.name}</b>」の名前で対戦アリーナに登録します。トレーナーを倒していなくても、いつでも登録・更新できます。登録すると、同じ${cloudOn()?"クラス":"端末"}の他のトレーナーの挑戦相手になります。</div>`;
+  h+='<div class="sub" style="margin-bottom:6px;">登録される編成</div>';
+  if(!state.party.length)h+='<div class="empty">手持ちがいません</div>';
+  state.party.forEach(m=>{const sp=SPECIES[m.sp];h+=`<div class="monrow"><div class="monart">${monSVG(m.sp)}</div><div class="moninfo"><div class="monname">${sp.name} <span class="tbadge" style="background:${TYPES[sp.type].color}22;border-color:${TYPES[sp.type].color};color:${TYPES[sp.type].color}">${TYPES[sp.type].name}</span></div><div class="monsub">Lv${m.lv}</div></div></div>`;});
+  h+=`<div style="text-align:center;margin-top:10px;"><button class="startBtn" style="font-size:14px;padding:11px 28px;" onclick="doRegister()">この編成を登録する</button></div>`;
+  h+=`<div class="sub" style="text-align:center;margin-top:8px;">現在の戦績：${state.wins||0}勝 ${state.losses||0}敗　${cloudOn()?'☁ クラウド同期ON':'📴 この端末のみ（Firebase未設定）'}</div>`;
+  $id("registerBody").innerHTML=h;
+}
+function doRegister(){ if(!state.party.length){toast("手持ちがいません");return;} saveMyTeam(false); renderRegister(); }
+
+/* ===== 自由対戦（登録プレイヤーから相手を選ぶ） ===== */
+function openVersus(){$id("versus").classList.add("show");$id("versusBody").innerHTML='<div class="empty">読み込み中…</div>';
+  // クラウドがあれば最新取得→少し待って描画
+  loadOpponents();
+  setTimeout(()=>renderVersus(), cloudOn()?500:0);
+  if(!cloudOn())renderVersus();
+}
+function closeVersus(){$id("versus").classList.remove("show");}
+function renderVersus(){
+  const opp=loadOpponents();
+  // 自分を除外し、勝利数順
+  const mine="P_"+(state.name||"trainer");
+  let list=opp.players.filter(p=>p.id!==mine && p.name!==state.name);
+  list.sort((a,b)=>((b.wins||0)-(a.wins||0))||((a.losses||0)-(b.losses||0)));
+  let h=`<div class="note" style="margin-bottom:10px;">登録されているトレーナーに挑戦できます（勝利数順）。${cloudOn()?'クラス全体':'この端末'}の編成から選べます。</div>`;
+  if(!list.length){h+='<div class="empty">まだ他のトレーナーが登録されていません。<br>📋編成登録台で自分の編成を登録すると、他の人の挑戦相手になります。</div>';}
+  list.forEach((p,i)=>{
+    const team=(p.team||[]).map(m=>`<span class="vteam" title="${SPECIES[m.sp]?SPECIES[m.sp].name:''} Lv${m.lv}">${SPECIES[m.sp]?monSVG(m.sp):''}<span class="vlv">${m.lv}</span></span>`).join("");
+    h+=`<div class="vrow"><div class="vhead"><span class="vname" style="color:${p.color||'#4fd8c8'}">${p.name}</span>
+      <span class="vrec">${p.wins||0}勝 ${p.losses||0}敗 ・ 🏅${p.badges||0}</span></div>
+      <div class="vteams">${team||'<span class="sub">編成なし</span>'}</div>
+      <button class="actBtn vbtn" onclick="challengePlayer(${i})">挑戦</button></div>`;
+  });
+  window.__versusList=list;
+  $id("versusBody").innerHTML=h;
+}
+function challengePlayer(i){
+  const p=(window.__versusList||[])[i]; if(!p||!p.team||!p.team.length){toast("編成が空です");return;}
+  if(!firstAlive(state.party)){toast("戦えるモンスターがいない！回復所(✚)へ");return;}
+  closeVersus();
+  // プレイヤー編成を相手トレーナーとして戦う（バッジ対象外・勝敗は記録）
+  const foe={id:p.id||("P_"+p.name), name:p.name, color:p.color||"#4fd8c8", player:true,
+    team:p.team, intro:(p.name+"の編成に挑戦！"), lose:"（"+p.name+"の編成を倒した！）"};
+  startDialogue(p.name,foe.color,[p.name+"の編成に挑戦する！"],()=>beginTrainerBattle(foe));
+}
+
+/* ===== ランキング（誰でもいつでも閲覧） ===== */
+function openRanking(){$id("ranking").classList.add("show");$id("rankingBody").innerHTML='<div class="empty">読み込み中…</div>';
+  loadRanking(list=>{renderRanking(list);}); }
+function closeRanking(){$id("ranking").classList.remove("show");}
+function renderRanking(list){
+  if(!list||!list.length){$id("rankingBody").innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  let h='<div class="sub" style="margin-bottom:8px;">勝利数ランキング（プレイヤー編成＋CPUトレーナー）</div>';
+  list.slice(0,30).forEach((e,i)=>{const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":("#"+(i+1));
+    const me=(e.name===state.name&&e.player);
+    h+=`<div class="rankRow ${me?'me':''}"><span class="rankNo">${medal}</span>
+      <span class="rankName" style="color:${e.color||'#4fd8c8'}">${e.name}${e.cpu?' <span class="sub">(CPU)</span>':''}${me?' <span class="sub">(あなた)</span>':''}</span>
+      <span class="rankRec"><b>${e.wins||0}</b>勝 ${e.losses||0}敗</span></div>`;});
+  h+=`<div class="sub" style="text-align:center;margin-top:8px;">${cloudOn()?'☁ クラス全体の集計':'📴 この端末の記録（Firebase未設定）'}</div>`;
+  $id("rankingBody").innerHTML=h;
+}
+
+/* ===== パーティ/メニュー ===== */
+function openMenu(){if(dlg||B||$id("titlescreen").style.display!=="none")return;$id("menu").classList.add("show");switchTab("team");}
+function closeMenu(){$id("menu").classList.remove("show");}
+function switchTab(n){document.querySelectorAll("#menu .tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===n));
+  document.querySelectorAll("#menu .mpanel").forEach(p=>p.classList.remove("show"));$id("mpanel-"+n).classList.add("show");renderTab(n);}
+function renderTab(n){
+  if(n==="team"){
+    let h="";state.party.forEach((m,i)=>{const sp=SPECIES[m.sp];h+=`<div class="monrow">
+      <div class="monart">${monSVG(m.sp)}</div>
+      <div class="moninfo"><div class="monname">${sp.name} <span class="tbadge" style="background:${TYPES[sp.type].color}22;border-color:${TYPES[sp.type].color};color:${TYPES[sp.type].color}">${TYPES[sp.type].name}</span></div>
+        <div class="monsub">Lv${m.lv} ／ HP ${m.hp}/${m.maxhp} ／ 技: ${m.moves.map(k=>MOVES[k].name).join("・")}</div>
+        <div class="xpbar"><span style="width:${m.exp/expToNext(m.lv)*100}%"></span></div></div>
+      <div class="monbtns">${i>0?`<button class="miniBtn" onclick="partyUp(${i})" title="順番を上げる">▲</button>`:""}<button class="miniBtn" onclick="partyToBox(${i})" ${state.party.length<=1?'disabled':''} title="ボックスへ預ける">預ける ▼</button></div></div>`;});
+    h+=`<div class="sub" style="margin:8px 0 5px;">ボックス（控え・${state.box.length}体）${state.party.length>=6?' ／ 手持ちが満員です。入れ替えるには手持ちを1体「預ける」':''}</div>`;
+    if(state.box.length){
+      state.box.forEach((m,i)=>{const sp=SPECIES[m.sp];h+=`<div class="monrow box"><div class="monart">${monSVG(m.sp)}</div>
+        <div class="moninfo"><div class="monname">${sp.name} <span class="tbadge" style="background:${TYPES[sp.type].color}22;border-color:${TYPES[sp.type].color};color:${TYPES[sp.type].color}">${TYPES[sp.type].name}</span></div><div class="monsub">Lv${m.lv} ／ HP ${m.hp}/${m.maxhp}</div></div>
+        <div class="monbtns"><button class="miniBtn" onclick="boxToParty(${i})" ${state.party.length>=6?'disabled':''} title="${state.party.length>=6?'手持ちが満員':'手持ちに入れる'}">◀ 手持ちへ</button></div></div>`;});
+    } else { h+='<div class="empty" style="padding:8px;">ボックスは空です。捕まえたモンスターや、手持ちから預けた子がここに入ります。</div>'; }
+    $id("mpanel-team").innerHTML=h||'<div class="empty">手持ちがいない</div>';
+  }
+  else if(n==="bag"){
+    $id("mpanel-bag").innerHTML=`<div class="statLine">🔮 捕獲ボール <b>${state.bag.ball}</b><br>🧪 回復薬 <b>${state.bag.potion}</b><br>🧪 強回復薬 <b>${state.bag.bigpotion}</b><br>✦ ゴールド <b>${state.gold}</b></div>`;
+  }
+  else if(n==="dex"){
+    let h='<div class="dexGrid">';Object.keys(SPECIES).forEach(k=>{const seen=state.dex.includes(k);const sp=SPECIES[k];
+      h+=`<div class="dexCard ${seen?'':'unknown'}">${monSVG(k)}<br>${seen?sp.name:"？？？"}<br><span class="sub">${seen?TYPES[sp.type].name:""}</span></div>`;});h+="</div>";
+    $id("mpanel-dex").innerHTML=h;
+  }
+  else if(n==="type"){
+    // 相性表
+    const tks=Object.keys(TYPES);
+    let h='<div class="sub" style="margin-bottom:6px;">攻撃(縦) → 防御(横)。◎抜群 ×いまひとつ</div><div class="chartWrap"><table class="chart"><tr><th></th>';
+    tks.forEach(d=>h+=`<th style="color:${TYPES[d].color}">${TYPES[d].name}</th>`);h+="</tr>";
+    tks.forEach(a=>{h+=`<tr><th style="color:${TYPES[a].color};text-align:right">${TYPES[a].name}</th>`;
+      tks.forEach(d=>{const m=typeMul(a,d);const s=m>=2?'<span class="good">◎</span>':(m<=0.5?'<span class="bad">×</span>':'・');h+=`<td>${s}</td>`;});h+="</tr>";});
+    h+="</table></div>";
+    h+='<div class="note" style="margin-top:10px;">力学⇔エネルギーは互いに抜群（仕事と運動）。電磁気は波動に強い（電磁波）、波動は原子に強い（光量子）。力学・熱→エネルギー、熱→エネルギーも抜群。相手の分野に合う技で「効果抜群」を狙おう。</div>';
+    $id("mpanel-type").innerHTML=h;
+  }
+  else if(n==="note"){
+    $id("mpanel-note").innerHTML=NOTES.map(nt=>`<div class="noteItem"><h4>${nt.t}</h4>${nt.b}</div>`).join("");
+  }
+}
+function partyUp(i){const t=state.party[i];state.party.splice(i,1);state.party.splice(i-1,0,t);renderTab("team");saveState();}
+function partyToBox(i){ if(state.party.length<=1){toast("最後の1体は預けられません");return;}
+  const m=state.party.splice(i,1)[0]; state.box.push(m); renderTab("team"); refresh(); saveState(); toast("📦 "+SPECIES[m.sp].name+" をボックスへ預けた"); }
+function boxToParty(i){ if(state.party.length>=6){toast("手持ちが満員です。先に手持ちを1体「預ける」");return;}
+  const m=state.box.splice(i,1)[0]; state.party.push(m); renderTab("team"); refresh(); saveState(); toast("🎒 "+SPECIES[m.sp].name+" を手持ちに入れた"); }
+
+/* 公式ノート */
+const NOTES=[
+ {t:"力学",b:"等加速度: v=v₀+at, x=v₀t+½at²。運動方程式 ma=F。運動量 p=mv、力積=運動量変化 Ft=mv−mv₀。向心力 F=mv²/r。単振動 T=2π√(m/k)。"},
+ {t:"エネルギー",b:"運動エネルギー K=½mv²、位置エネルギー U=mgh、弾性 U=½kx²。仕事 W=Fx、仕事率 P=W/t。力学的エネルギー保存: K+U=一定。自由落下 v=√(2gh)。"},
+ {t:"波動",b:"波の基本式 v=fλ、周期 T=1/f。音速 V=331.5+0.6t。ドップラー f'=fV/(V∓v)。凸レンズ 1/a+1/b=1/f。弦・開管の基本波長=2L、閉管=4L。"},
+ {t:"熱",b:"熱量 Q=mcΔt。絶対温度 T=t+273（絶対零度−273℃）。ボイル・シャルル pV/T=一定、状態方程式 pV=nRT。熱力学第一法則 ΔU=Q+W。"},
+ {t:"電磁気",b:"オーム V=RI、電力 P=VI。直列 R=R₁+R₂、並列 1/R=1/R₁+1/R₂。クーロン F=kq₁q₂/r²。電流が磁場から受ける力 F=BIL、ローレンツ力 F=qvB。コンデンサー Q=CV。"},
+ {t:"原子",b:"光子 E=hν、光電効果 K=hν−W。物質波 λ=h/(mv)。質量数=陽子数+中性子数。α崩壊で質量数−4・原子番号−2、β⁻崩壊で原子番号+1。E=mc²。半減期ごとに½になる。"},
+];
+
+/* ===== 入力 ===== */
+const keyMap={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0],W:[0,-1],S:[0,1],A:[-1,0],D:[1,0]};
+document.addEventListener("keydown",e=>{if($id("titlescreen").style.display!=="none")return;
+  if(e.key==="m"||e.key==="M"){e.preventDefault();$id("menu").classList.contains("show")?closeMenu():openMenu();return;}
+  if(e.key==="Escape"){closeMenu();closeShop();closeRegister();closeRanking();closeVersus();return;}
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();if(dlg)advanceDialogue();return;}
+  if(keyMap[e.key]){e.preventDefault();tryMove(...keyMap[e.key]);}});
+$id("dialogue").addEventListener("click",advanceDialogue);
+$id("openMenu").onclick=openMenu;$id("closeMenu").onclick=closeMenu;$id("closeShop").onclick=closeShop;$id("bgmBtn").onclick=toggleBgm;$id("edClose").onclick=closeEnding;
+$id("closeRegister").onclick=closeRegister;$id("closeRanking").onclick=closeRanking;$id("closeVersus").onclick=closeVersus;
+document.querySelectorAll("#menu .tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
+document.querySelectorAll(".dpad button[data-d]").forEach(b=>{const m={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};b.onclick=()=>tryMove(...m[b.dataset.d]);});
+
+/* ===== トースト ===== */
+let tT;function toast(html){const t=$id("toast");t.innerHTML=html;t.classList.add("show");clearTimeout(tT);tT=setTimeout(()=>t.classList.remove("show"),2800);}
+
+/* ===== スターター選択・起動 ===== */
+const STARTERS=["mechick","waverin","enern"];
+function showStarters(){
+  const box=$id("starterChoices");box.innerHTML="";
+  STARTERS.forEach(k=>{const sp=SPECIES[k];const d=document.createElement("button");d.className="starterCard";
+    d.innerHTML=`<div class="scart">${monSVG(k)}</div><div class="scname">${sp.name}</div><div class="sctype" style="color:${TYPES[sp.type].color}">${TYPES[sp.type].name}タイプ</div>`;
+    d.onclick=()=>pickStarter(k);box.appendChild(d);});
+}
+function pickStarter(k){
+  state.party=[makeMon(k,5)];dexAdd(k);state.started=true;
+  $id("starterModal").classList.remove("show");
+  startGame();
+  startDialogue("助手 ニュートン","#4a8af0",[
+    "いい相棒を選んだね！ ここは物理の法則が宿るモンスターたちの世界。",
+    "草むら(緑)を歩くと野生モンスターに出会える。技を選ぶと物理の公式問題が出て、正解で攻撃できるよ。",
+    "相手の分野に強い技だと『効果抜群』。連続正解でコンボも乗る。弱らせて🔮ボールで仲間にもできる。",
+    "右の▶から次のエリアへ、✚マスで回復。『対戦アリーナ』ではトレーナーに挑戦してバッジを集めよう！",
+    "四天王は手ごわいぞ。最後は物理王ゲンシが待つ。勝てば、あなたの編成はアリーナに登録されてクラスの誰かの挑戦相手になる。いってらっしゃい！"
+  ]);
+}
+function startGame(){
+  $id("titlescreen").style.display="none";ensureAudio();
+  loadArea(state.area||0);const s=startTile(state.area||0);
+  if(!state.px&&!state.py){state.px=s.x;state.py=s.y;}
+  place("player",state.px,state.py);camera();refresh();drawMinimap();playMusic("field");saveState();
+}
+function applySave(sv){
+  state=freshState(sv.name);Object.assign(state,sv);
+  state.bag=state.bag||{ball:5,potion:3,bigpotion:0};state.party=state.party||[];
+  state.wins=state.wins||0;state.losses=state.losses||0;
+}
+function newGame(){ const nm=($id("nameInput").value||"").trim().slice(0,8);
+  if(!nm){toast("トレーナー名を入力してください");return;}
+  // 同名セーブがあれば「続きから」。トレーナー名でセーブ管理
+  const local=loadSaveByName(nm);
+  const begin=(cloudSv)=>{
+    const sv=cloudSv||local;
+    if(sv&&sv.party&&sv.party.length){ applySave(sv); toast("『"+nm+"』の続きから再開します"); startGame(); }
+    else { state=freshState(nm); $id("starterModal").classList.add("show"); showStarters(); }
+  };
+  if(cloudOn()){ fetchCloudSave(nm,begin); } else { begin(null); }
+}
+function continueGame(){
+  // 最後に遊んだトレーナー名から復帰（クラウド優先）
+  let lastName=""; try{lastName=localStorage.getItem(CURNAME_KEY)||"";}catch(e){}
+  const local=lastName?loadSaveByName(lastName):loadSave();
+  const begin=(cloudSv)=>{ const sv=cloudSv||local; if(!sv){toast("セーブデータがありません");return;} applySave(sv); startGame(); };
+  if(cloudOn()&&lastName){ fetchCloudSave(lastName,begin); } else { begin(null); }
+}
+function resetGame(){ if(confirm("この端末のセーブを消して最初からにしますか？")){try{localStorage.removeItem(SAVE_KEY);if(state&&state.name)localStorage.removeItem("physmon_save_"+state.name);localStorage.removeItem(CURNAME_KEY);}catch(e){}location.reload();} }
+
+function init(){
+  initFirebase(); // FIREBASE_CONFIG があればクラウド有効化
+  buildAreas();resolvePositions();state=freshState("");
+  $id("logoSlot").innerHTML=monSVG("mechgalaxy");$id("titleArt").innerHTML=`<div style="display:flex;gap:6px;justify-content:center">${monSVG("mechgalaxy")}${monSVG("voltdeus")}${monSVG("atomlord")}</div>`;
+  $id("newBtn").onclick=newGame;$id("contBtn").onclick=continueGame;$id("resetBtn").onclick=resetGame;
+  // 直近のトレーナー名を名前欄に補完
+  try{const ln=localStorage.getItem(CURNAME_KEY);if(ln)$id("nameInput").value=ln;}catch(e){}
+  if(loadSave()){$id("contBtn").style.display="inline-block";}
+}
+init();
+
+</script>
+</body>
+</html>
