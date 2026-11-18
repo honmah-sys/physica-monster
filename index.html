@@ -17,7 +17,11 @@
   body{background:var(--bg);color:var(--txt);font-family:"Segoe UI","Helvetica Neue",system-ui,sans-serif;
     display:flex;align-items:center;justify-content:center;min-height:100vh;padding:10px;
     background-image:radial-gradient(circle at 15% 10%,rgba(79,216,200,.10),transparent 42%),radial-gradient(circle at 85% 90%,rgba(154,124,240,.09),transparent 42%),linear-gradient(var(--bg2),#040a12);}
-  #app{width:100%;max-width:580px;position:relative;border:1px solid var(--line);border-radius:16px;background:linear-gradient(var(--bg2),var(--bg));overflow:hidden;box-shadow:0 0 0 1px rgba(79,216,200,.08),0 18px 50px rgba(0,0,0,.65);}
+  #app{width:100%;max-width:980px;position:relative;border:1px solid var(--line);border-radius:16px;background:linear-gradient(var(--bg2),var(--bg));overflow:hidden;box-shadow:0 0 0 1px rgba(79,216,200,.08),0 18px 50px rgba(0,0,0,.65);}
+  /* フルスクリーン時はウィンドウ全体に */
+  #app:fullscreen{max-width:none;width:100vw;height:100vh;border-radius:0;border:none;display:flex;flex-direction:column;}
+  #app:fullscreen #viewport{flex:1;height:auto;margin:8px auto;}
+  #app:fullscreen #battle{flex:1;}
   header{padding:9px 13px;border-bottom:1px solid var(--line);background:linear-gradient(rgba(79,216,200,.05),transparent);}
   .titleRow{display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .brand{display:flex;align-items:center;gap:8px;}
@@ -28,23 +32,43 @@
   .iconBtn{font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;background:var(--panel);color:var(--cyan);border:1px solid var(--line);border-radius:8px;padding:5px 11px;transition:.15s;}
   .iconBtn:hover{border-color:var(--cyan);box-shadow:var(--glow);}
   .stats{display:flex;gap:6px;flex-wrap:wrap;font-size:11px;margin-top:8px;align-items:center;}
-  .chip{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:3px 10px;display:flex;gap:4px;align-items:center;}
+  .chip{background:rgba(16,29,51,.7);backdrop-filter:blur(4px);border:1px solid rgba(120,150,200,.3);border-radius:20px;padding:3px 11px;display:flex;gap:4px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.25);}
   .chip b{color:var(--cyan);} .chip.gold b{color:var(--gold);}
   .leadwrap{display:flex;align-items:center;gap:6px;}
   .leadbar{height:7px;width:90px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--line);}
   .leadfill{height:100%;background:linear-gradient(90deg,var(--lime),var(--cyan));transition:width .25s;border-radius:6px;}
 
-  #viewport{position:relative;overflow:hidden;margin:11px auto;width:520px;height:340px;max-width:100%;border:1px solid var(--line);border-radius:12px;background:#060d18;}
+  #viewport{position:relative;overflow:hidden;margin:11px auto;width:100%;height:min(62vh,560px);max-width:100%;border:1px solid rgba(120,150,200,.12);border-radius:14px;background:#0a1420;box-shadow:inset 0 0 60px rgba(0,0,0,.5);}
   #world{position:absolute;left:0;top:0;will-change:transform;}
   #world canvas{display:block;image-rendering:pixelated;}
   .wsprite{position:absolute;width:34px;height:34px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+  .wsprite::after{content:"";position:absolute;left:50%;bottom:1px;width:22px;height:6px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.45),transparent 70%);z-index:-1;}
   .wsprite svg{display:block;width:34px;height:34px;}
   .wsprite.trainer svg{width:34px;height:40px;}
   .bob{animation:bob 1.8s ease-in-out infinite;}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
   .wname{position:absolute;font-size:9px;color:var(--txt);background:rgba(7,15,26,.9);border:1px solid var(--line);border-radius:5px;padding:1px 5px;white-space:nowrap;transform:translateX(-50%);left:17px;top:-13px;}
+  .alertMark{position:absolute;left:50%;top:-22px;transform:translateX(-50%);font-size:20px;font-weight:900;color:#f0c64a;
+    text-shadow:0 0 6px rgba(240,198,74,.8),0 2px 2px #000;z-index:10;animation:alertPop .65s ease-out;}
+  @keyframes alertPop{0%{transform:translateX(-50%) scale(0) translateY(6px);opacity:0;}30%{transform:translateX(-50%) scale(1.3) translateY(0);opacity:1;}50%{transform:translateX(-50%) scale(1);}100%{transform:translateX(-50%) scale(1);opacity:1;}}
   #minimap{position:absolute;right:8px;top:8px;z-index:6;border:1px solid var(--line);border-radius:6px;background:rgba(7,15,26,.85);image-rendering:pixelated;}
-  #areaName{position:absolute;left:8px;top:8px;z-index:6;font-size:11px;font-weight:600;color:var(--cyan);background:rgba(7,15,26,.82);border:1px solid var(--line);border-radius:6px;padding:3px 9px;}
+  #areaName{position:absolute;left:10px;top:10px;z-index:6;font-size:12px;font-weight:700;color:#eaf6ff;background:rgba(10,20,36,.78);backdrop-filter:blur(5px);border:1px solid rgba(120,150,200,.35);border-left:3px solid var(--cyan);border-radius:8px;padding:5px 12px;box-shadow:0 3px 10px rgba(0,0,0,.4);animation:areaIn .5s cubic-bezier(.2,.8,.2,1);}
+  @keyframes areaIn{0%{opacity:0;transform:translateX(-14px);}100%{opacity:1;transform:none;}}
+  /* 戦闘突入トランジション */
+  #battleWipe{position:absolute;inset:0;z-index:30;pointer-events:none;opacity:0;}
+  #battleWipe.flash{animation:bwflash .5s ease-out;}
+  #battleWipe.flash.trainer{animation:bwflash .6s ease-out;}
+  @keyframes bwflash{
+    0%{opacity:0;background:radial-gradient(circle,rgba(255,255,255,0) 0%,rgba(79,216,200,0) 100%);}
+    15%{opacity:1;background:radial-gradient(circle,rgba(255,255,255,.9) 0%,rgba(79,216,200,.4) 60%,rgba(7,15,26,.2) 100%);}
+    35%{opacity:1;background:rgba(7,15,26,.0);}
+    45%{opacity:1;background:repeating-linear-gradient(45deg,#060d18 0 24px,rgba(79,216,200,.25) 24px 48px);}
+    70%{opacity:1;background:#060d18;}
+    100%{opacity:1;background:#060d18;}
+  }
+  #battleWipe.clear{opacity:0;transition:opacity .25s;}
+  /* エンカウント時の草むら揺れ */
+  @keyframes encShake{0%,100%{transform:translate(var(--wx,0),var(--wy,0));}25%{transform:translate(calc(var(--wx,0) - 4px),var(--wy,0));}75%{transform:translate(calc(var(--wx,0) + 4px),var(--wy,0));}}
 
   #dialogue{display:none;position:absolute;left:10px;right:10px;bottom:10px;z-index:8;background:rgba(16,29,51,.97);border:1px solid var(--cyan);border-radius:12px;box-shadow:var(--glow);}
   #dialogue.show{display:flex;}
@@ -56,48 +80,92 @@
   .dlgHint{font-size:10px;color:var(--txt-dim);text-align:right;margin-top:4px;}
 
   /* battle */
-  #battle{display:none;padding:12px;}
-  #battle.trainer{background:radial-gradient(circle at 50% 20%,rgba(154,124,240,.12),transparent 60%);}
-  .bfield{display:flex;flex-direction:column;gap:6px;}
-  .brow{display:flex;align-items:center;gap:10px;}
-  .brow.foe{flex-direction:row;}
-  .brow.me{flex-direction:row-reverse;}
-  .bart{width:96px;height:96px;flex:0 0 96px;display:flex;align-items:center;justify-content:center;}
-  .bart svg{width:88px;height:88px;filter:drop-shadow(0 0 10px rgba(79,216,200,.3));}
-  .bart.hit{animation:shake .3s;}
-  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
-  .bcard{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 11px;}
-  .bcard .bname{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;justify-content:space-between;}
-  .bcard .blv{font-size:11px;color:var(--txt-dim);}
+  /* ===== SV風バトル ===== */
+  #battle{display:none;}
   .tbadge{font-size:9px;padding:1px 7px;border-radius:10px;border:1px solid;font-weight:700;}
-  .hpline{height:9px;background:var(--bg);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:6px;}
-  .hpline span{display:block;height:100%;background:linear-gradient(90deg,var(--lime),var(--cyan));transition:width .35s;}
-  .foe .hpline span{background:linear-gradient(90deg,var(--danger),var(--rose));}
-  .hptxt{font-size:10px;color:var(--txt-dim);margin-top:2px;}
-  .xpline{height:4px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:4px;}
-  .xpline span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--gold));transition:width .35s;}
-  .bmid{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--txt-dim);margin:4px 2px;}
-  .combo{color:var(--amber);font-weight:700;}
+  .svtype{font-size:9px;padding:1px 8px;border-radius:10px;border:1px solid;font-weight:700;}
+  /* ステージ: 奥行きのある背景。相手=右上/自分=左下 */
+  .svstage{position:relative;height:min(46vh,330px);min-height:230px;overflow:hidden;border-radius:12px 12px 0 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 72% 32%,rgba(240,106,154,.10),transparent 70%),
+      radial-gradient(ellipse 60% 40% at 28% 78%,rgba(79,216,200,.12),transparent 70%),
+      linear-gradient(160deg,#0d1830 0%,#0a1322 55%,#070e1a 100%);}
+  #battle.trainer .svstage{background:
+      radial-gradient(ellipse 60% 40% at 72% 30%,rgba(154,124,240,.16),transparent 70%),
+      radial-gradient(ellipse 60% 40% at 28% 78%,rgba(79,216,200,.12),transparent 70%),
+      linear-gradient(160deg,#141033 0%,#0b1226 55%,#070e1a 100%);}
+  /* 奥・手前の床だ円 */
+  .svstage::before{content:"";position:absolute;right:12%;top:30%;width:180px;height:54px;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(120,150,200,.18),transparent 70%);transform:translateX(50%);}
+  .svstage::after{content:"";position:absolute;left:14%;bottom:12%;width:230px;height:66px;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(120,150,200,.22),transparent 70%);transform:translateX(-50%);}
+  /* モンスター */
+  .svmon{position:absolute;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));}
+  .svmon svg{display:block;}
+  .svmon.foe{right:11%;top:5%;width:116px;height:116px;transform:translateX(50%);animation:svbob 2.4s ease-in-out infinite;}
+  .svmon.foe svg{width:108px;height:108px;}
+  .svmon.me{left:13%;bottom:11%;width:150px;height:150px;transform:translateX(-50%) scaleX(-1);animation:svbob 2.6s ease-in-out infinite;}
+  .svmon.me svg{width:142px;height:142px;}
+  @keyframes svbob{0%,100%{margin-top:0}50%{margin-top:-5px}}
+  .svmon.hit{animation:svhit .3s;}
+  @keyframes svhit{0%,100%{filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));}50%{filter:drop-shadow(0 6px 10px rgba(0,0,0,.5)) brightness(2.4);transform:translateX(50%) translateX(6px);}}
+  .svmon.me.hit{animation:svhitme .3s;}
+  @keyframes svhitme{0%,100%{}50%{filter:brightness(2.2);transform:translateX(-50%) scaleX(-1) translateX(6px);}}
+  /* 技エフェクト */
+  .svfx{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
+  .fxOrb{position:absolute;border-radius:50%;filter:blur(1px);box-shadow:0 0 16px 4px var(--fxc,#4fd8c8);
+    background:radial-gradient(circle,#fff 0%,var(--fxc,#4fd8c8) 55%,transparent 75%);}
+  .fxOrb.toFoe{left:22%;bottom:30%;width:26px;height:26px;animation:orbToFoe .34s ease-in forwards;}
+  .fxOrb.toMe{right:24%;top:24%;width:26px;height:26px;animation:orbToMe .34s ease-in forwards;}
+  @keyframes orbToFoe{0%{left:22%;bottom:30%;opacity:0;transform:scale(.4);}20%{opacity:1;}100%{left:76%;bottom:62%;opacity:1;transform:scale(1.1);}}
+  @keyframes orbToMe{0%{right:24%;top:24%;opacity:0;transform:scale(.4);}20%{opacity:1;}100%{right:70%;top:56%;opacity:1;transform:scale(1.1);}}
+  .fxBurst{position:absolute;border-radius:50%;border:3px solid var(--fxc,#4fd8c8);opacity:0;}
+  .fxBurst.atFoe{right:20%;top:20%;width:20px;height:20px;transform:translate(50%,-10%);animation:burst .4s ease-out forwards;}
+  .fxBurst.atMe{left:24%;bottom:20%;width:20px;height:20px;transform:translate(-50%,10%);animation:burst .4s ease-out forwards;}
+  @keyframes burst{0%{opacity:0;transform:scale(.3);}30%{opacity:1;}100%{opacity:0;transform:scale(3);}}
+  .fxFlash{position:absolute;inset:0;background:var(--fxc,#4fd8c8);opacity:0;mix-blend-mode:screen;animation:fxflash .3s ease-out;}
+  @keyframes fxflash{0%{opacity:0;}30%{opacity:.4;}100%{opacity:0;}}
+  /* SV風HPパネル(角丸・半透明) */
+  .svpanel{position:absolute;width:min(46%,290px);background:rgba(10,20,36,.82);backdrop-filter:blur(4px);
+    border:1px solid rgba(120,150,200,.35);border-radius:14px;padding:8px 13px 10px;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+  .svpanel.foe{left:4%;top:7%;}
+  .svpanel.me{right:4%;bottom:9%;}
+  .svname{display:flex;align-items:center;gap:7px;justify-content:space-between;font-size:14px;font-weight:800;color:#eef4ff;}
+  .svlvrow{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .svlv{font-size:11px;font-weight:700;color:#aab8d4;flex:0 0 auto;}
+  .svhp{flex:1;height:10px;background:#060b16;border:1px solid rgba(120,150,200,.3);border-radius:7px;overflow:hidden;}
+  .svhpfill{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#7fe0a0,#4fd8c8);transition:width .4s,background .4s;}
+  .svhptxt{font-size:10px;color:#aab8d4;text-align:right;margin-top:3px;}
+  .svxp{height:4px;background:#060b16;border-radius:4px;overflow:hidden;margin-top:5px;}
+  .svxp span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--gold));transition:width .4s;}
+  .svtop{position:absolute;right:10px;top:8px;display:flex;align-items:center;gap:8px;z-index:3;}
+  .combo{color:var(--amber);font-weight:800;font-size:13px;text-shadow:0 1px 3px #000;}
   .partyDots{display:flex;gap:4px;}
-  .pdot{width:9px;height:9px;border-radius:50%;background:var(--lime);border:1px solid var(--line);}
-  .pdot.ko{background:#3a4660;} .pdot.cur{box-shadow:0 0 0 2px var(--cyan);}
-  #battleMenu{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px;}
-  .mvBtn{font-family:inherit;text-align:left;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer;transition:.12s;display:flex;flex-direction:column;gap:2px;}
-  .mvBtn:hover:not(:disabled){border-color:var(--cyan);box-shadow:var(--glow);}
+  .pdot{width:9px;height:9px;border-radius:50%;background:var(--lime);border:1px solid rgba(0,0,0,.4);}
+  .pdot.ko{background:#3a4660;} .pdot.cur{box-shadow:0 0 0 2px #fff;}
+  /* 下部コマンド */
+  .svcmd{padding:11px 12px 12px;background:linear-gradient(rgba(12,22,38,.6),rgba(10,18,32,.9));border-radius:0 0 12px 12px;}
+  #battleMenu{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  /* SV風技ボタン: タイプ色でふち取り＋PP */
+  .mvBtn{font-family:inherit;text-align:left;position:relative;color:#eef4ff;border-radius:12px;padding:10px 13px 9px;cursor:pointer;transition:.12s;
+    display:flex;flex-direction:column;gap:3px;border:2px solid var(--mvc,#4fd8c8);
+    background:linear-gradient(135deg,color-mix(in srgb,var(--mvc,#4fd8c8) 26%,#0b1626),#0b1626);}
+  .mvBtn:hover:not(:disabled){filter:brightness(1.15);box-shadow:0 0 12px var(--mvc,#4fd8c8);}
   .mvBtn:disabled{opacity:.4;cursor:default;}
-  .mvBtn b{font-size:12.5px;} .mvmeta{font-size:10px;color:var(--txt-dim);}
-  .cmdRow{grid-column:1/3;display:flex;gap:7px;}
-  .cmdBtn{flex:1;font-family:inherit;font-size:12px;background:var(--panel);color:var(--cyan);border:1px solid var(--line);border-radius:9px;padding:9px;cursor:pointer;}
-  .cmdBtn:hover:not(:disabled){border-color:var(--cyan);} .cmdBtn:disabled{opacity:.4;cursor:default;}
-  #quizArea{margin-top:6px;}
-  .quizMove{font-size:11px;color:var(--txt-dim);margin-bottom:5px;}
-  .quizQ{font-size:13.5px;line-height:1.6;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
-  #quizChoices{display:grid;gap:7px;margin-top:8px;}
-  .qchoice{text-align:left;font-family:inherit;font-size:12.5px;cursor:pointer;color:var(--txt);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;transition:.12s;}
-  .qchoice:hover:not(:disabled){border-color:var(--cyan);box-shadow:var(--glow);}
+  .mvBtn b{font-size:13px;} .mvmeta{font-size:10px;opacity:.85;display:flex;justify-content:space-between;}
+  .mvpp{font-weight:700;}
+  .cmdRow{grid-column:1/3;display:flex;gap:8px;}
+  .cmdBtn{flex:1;font-family:inherit;font-size:12px;font-weight:600;background:rgba(16,30,52,.9);color:#cfe0ff;border:1px solid rgba(120,150,200,.35);border-radius:11px;padding:10px;cursor:pointer;}
+  .cmdBtn:hover:not(:disabled){border-color:var(--cyan);color:#fff;} .cmdBtn:disabled{opacity:.4;cursor:default;}
+  #quizArea{}
+  .quizMove{font-size:11px;color:#aab8d4;margin-bottom:6px;}
+  .quizQ{font-size:14px;line-height:1.6;background:rgba(10,20,36,.9);border:1px solid rgba(120,150,200,.3);border-radius:12px;padding:11px 13px;color:#eef4ff;}
+  #quizChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;}
+  .qchoice{text-align:left;font-family:inherit;font-size:12.5px;cursor:pointer;color:#eef4ff;background:linear-gradient(135deg,rgba(26,42,68,.95),rgba(12,22,38,.95));border:1px solid rgba(120,150,200,.3);border-radius:11px;padding:11px 13px;transition:.12s;}
+  .qchoice:hover:not(:disabled){border-color:var(--cyan);box-shadow:0 0 10px rgba(79,216,200,.4);}
   .qchoice:disabled{cursor:default;}
-  .qchoice.correct{background:rgba(127,224,160,.2);border-color:var(--lime);color:#eaffd6;}
-  .qchoice.wrong{background:rgba(240,86,110,.2);border-color:var(--danger);color:#ffdede;}
+  .qchoice.correct{background:linear-gradient(135deg,rgba(127,224,160,.3),rgba(79,216,200,.2));border-color:var(--lime);color:#eaffd6;}
+  .qchoice.wrong{background:linear-gradient(135deg,rgba(240,86,110,.3),rgba(240,106,154,.2));border-color:var(--danger);color:#ffdede;}
 
   #log{margin:0 12px 12px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 12px;min-height:42px;font-size:12px;line-height:1.6;color:var(--txt-dim);}
   #log .sys{color:var(--cyan);font-weight:600;}
@@ -111,15 +179,17 @@
   #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(150%);background:var(--panel2);border:1px solid var(--cyan);border-radius:11px;color:var(--txt);padding:11px 18px;font-size:12px;transition:transform .4s;z-index:60;max-width:90vw;text-align:center;box-shadow:var(--glow);}
   #toast.show{transform:translateX(-50%) translateY(0);} #toast b{color:var(--cyan);}
 
-  .overlay{display:none;position:absolute;inset:0;z-index:20;background:rgba(6,12,22,.96);padding:16px;overflow:auto;}
-  .overlay.show{display:block;}
-  .ovTitle{font-size:15px;font-weight:700;text-align:center;margin-bottom:8px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .ovClose{position:absolute;right:12px;top:12px;font-family:inherit;font-size:11px;background:var(--danger);color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;z-index:2;}
-  .tabs{display:flex;gap:5px;justify-content:center;margin:8px 0;flex-wrap:wrap;}
-  .tab{font-family:inherit;font-size:11px;background:var(--panel);color:var(--txt-dim);border:1px solid var(--line);border-radius:18px;padding:5px 13px;cursor:pointer;}
-  .tab.active{background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04121a;font-weight:700;border-color:transparent;}
-  .mpanel{display:none;} .mpanel.show{display:block;}
-  .row{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;margin-bottom:7px;font-size:12px;}
+  .overlay{display:none;position:absolute;inset:0;z-index:20;background:linear-gradient(160deg,rgba(10,18,34,.97),rgba(6,10,20,.98));backdrop-filter:blur(2px);padding:16px;overflow:auto;}
+  .overlay.show{display:block;animation:ovIn .25s ease-out;}
+  @keyframes ovIn{0%{opacity:0;transform:scale(.98)}100%{opacity:1;transform:none}}
+  .ovTitle{font-size:17px;font-weight:800;text-align:center;margin-bottom:10px;letter-spacing:1px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .ovClose{position:absolute;right:12px;top:12px;font-family:inherit;font-size:11px;font-weight:700;background:rgba(240,86,110,.9);color:#fff;border:none;border-radius:10px;padding:6px 12px;cursor:pointer;z-index:2;box-shadow:0 3px 8px rgba(0,0,0,.3);}
+  .tabs{display:flex;gap:6px;justify-content:center;margin:8px 0 12px;flex-wrap:wrap;}
+  .tab{font-family:inherit;font-size:11.5px;font-weight:600;background:rgba(16,29,51,.7);color:#aab8d4;border:1px solid rgba(120,150,200,.3);border-radius:20px;padding:6px 15px;cursor:pointer;transition:.12s;}
+  .tab:hover{border-color:var(--cyan);color:#fff;}
+  .tab.active{background:linear-gradient(135deg,var(--cyan),var(--violet));color:#04121a;font-weight:800;border-color:transparent;box-shadow:0 3px 10px rgba(79,216,200,.3);}
+  .mpanel{display:none;} .mpanel.show{display:block;animation:ovIn .2s ease-out;}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid rgba(120,150,200,.28);background:linear-gradient(135deg,rgba(18,30,52,.8),rgba(12,20,36,.8));border-radius:12px;padding:10px 13px;margin-bottom:8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.2);}
   .row .info{flex:1;} .row .sub{color:var(--txt-dim);font-size:10px;margin-top:2px;}
   .actBtn{font-family:inherit;font-size:11px;font-weight:600;background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04121a;border:none;border-radius:8px;padding:6px 13px;cursor:pointer;}
   .actBtn:hover{filter:brightness(1.1);}
@@ -127,9 +197,10 @@
   .empty{color:var(--txt-dim);font-size:11px;text-align:center;padding:16px;}
   .sub{color:var(--txt-dim);font-size:11px;}
   /* party monrow */
-  .monrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;margin-bottom:7px;}
-  .monrow.box{opacity:.85;}
-  .monart{width:44px;height:44px;flex:0 0 44px;} .monart svg{width:44px;height:44px;}
+  .monrow{display:flex;align-items:center;gap:11px;border:1px solid rgba(120,150,200,.28);background:linear-gradient(135deg,rgba(18,30,52,.85),rgba(12,20,36,.85));border-radius:13px;padding:9px 11px;margin-bottom:8px;box-shadow:0 2px 10px rgba(0,0,0,.25);transition:.12s;}
+  .monrow:hover{border-color:var(--cyan);transform:translateX(2px);}
+  .monrow.box{opacity:.8;}
+  .monart{width:48px;height:48px;flex:0 0 48px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(79,216,200,.12),transparent 70%);border-radius:10px;} .monart svg{width:46px;height:46px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
   .moninfo{flex:1;min-width:0;}
   .monname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;}
   .monsub{font-size:10.5px;color:var(--txt-dim);margin-top:2px;}
@@ -139,9 +210,10 @@
   .monbtns .miniBtn{white-space:nowrap;}
   .miniBtn{font-family:inherit;font-size:11px;background:var(--panel2);color:var(--cyan);border:1px solid var(--line);border-radius:7px;padding:4px 8px;cursor:pointer;}
   .miniBtn:disabled{opacity:.4;cursor:default;}
-  .dexGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px;}
-  .dexCard{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px;text-align:center;font-size:10.5px;}
-  .dexCard svg{width:46px;height:46px;}
+  .dexGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
+  .dexCard{border:1px solid rgba(120,150,200,.28);background:linear-gradient(160deg,rgba(20,32,54,.85),rgba(12,20,36,.85));border-radius:12px;padding:8px 6px;text-align:center;font-size:10.5px;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:.12s;}
+  .dexCard:hover{transform:translateY(-2px);border-color:var(--cyan);box-shadow:0 5px 14px rgba(79,216,200,.2);}
+  .dexCard svg{width:48px;height:48px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));}
   .dexCard.unknown{color:var(--txt-dim);} .dexCard.unknown svg{filter:brightness(0) opacity(.4);}
   .chartWrap{overflow-x:auto;}
   table.chart{border-collapse:collapse;font-size:11px;margin:0 auto;}
@@ -164,21 +236,44 @@
   .vlv{position:absolute;right:-2px;bottom:-3px;font-size:8px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 3px;color:var(--cyan);}
   .vbtn{position:absolute;right:11px;bottom:11px;}
   .vrow .vteams{padding-right:66px;}
-  .noteItem{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:11.5px;line-height:1.75;}
-  .noteItem h4{color:var(--cyan);font-size:11.5px;margin-bottom:4px;}
+  .noteItem{border:1px solid rgba(120,150,200,.28);border-left:3px solid var(--cyan);background:linear-gradient(135deg,rgba(18,30,52,.8),rgba(12,20,36,.8));border-radius:12px;padding:11px 13px;margin-bottom:8px;font-size:11.5px;line-height:1.8;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+  .noteItem h4{color:var(--cyan);font-size:12.5px;margin-bottom:5px;font-weight:800;}
 
   /* title */
-  #titlescreen{position:absolute;inset:0;z-index:50;background:linear-gradient(#070f1a,#040a12);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background-image:radial-gradient(circle at 50% 28%,rgba(79,216,200,.16),transparent 55%),radial-gradient(circle at 50% 74%,rgba(154,124,240,.12),transparent 55%);}
-  #titlescreen .ttlBadge{font-size:10px;letter-spacing:5px;color:var(--cyan);margin-bottom:8px;}
-  .titleArt{margin-bottom:18px;} .titleArt svg{width:66px;height:66px;filter:drop-shadow(0 0 12px rgba(79,216,200,.5));}
-  #titlescreen h1{font-size:27px;font-weight:800;letter-spacing:1px;margin-bottom:6px;background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
-  #titlescreen .sub{color:var(--txt-dim);font-size:11px;margin-bottom:18px;}
-  .nameField{margin-bottom:14px;}
-  .nameField input{font-family:inherit;font-size:13px;text-align:center;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 12px;width:200px;max-width:70vw;}
-  .nameField input:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow);}
-  .startBtn{font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04121a;border:none;border-radius:11px;padding:12px 34px;margin:5px;box-shadow:var(--glow);}
-  .startBtn:hover{filter:brightness(1.1);}
-  #titlescreen .tip{color:var(--txt-dim);font-size:10px;margin-top:16px;line-height:1.8;}
+  #titlescreen{position:absolute;inset:0;z-index:50;overflow:hidden;background:linear-gradient(150deg,#0b1430 0%,#0a1020 50%,#05080f 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;}
+  /* 動く星空 */
+  .tsky{position:absolute;inset:-50%;background-image:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 60%,#bcd6ff,transparent),radial-gradient(1px 1px at 40% 80%,#fff,transparent),radial-gradient(1px 1px at 85% 25%,#9fd,transparent),radial-gradient(1px 1px at 55% 15%,#fff,transparent),radial-gradient(2px 2px at 30% 65%,#cfe,transparent),radial-gradient(1px 1px at 90% 75%,#fff,transparent);background-size:auto;opacity:.55;animation:tdrift 40s linear infinite;}
+  @keyframes tdrift{0%{transform:translate(0,0)}100%{transform:translate(3%,4%)}}
+  /* 奥に広がるグリッド(奥行き) */
+  .tgrid{position:absolute;left:-20%;right:-20%;bottom:-10%;height:55%;background-image:linear-gradient(rgba(79,216,200,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(79,216,200,.14) 1px,transparent 1px);background-size:44px 44px;transform:perspective(380px) rotateX(62deg);transform-origin:bottom;opacity:.6;mask-image:linear-gradient(transparent,#000 60%);-webkit-mask-image:linear-gradient(transparent,#000 60%);animation:tgridmove 6s linear infinite;}
+  @keyframes tgridmove{0%{background-position:0 0}100%{background-position:0 44px}}
+  .tfloat{position:absolute;inset:0;pointer-events:none;}
+  .tfloat .fm{position:absolute;opacity:.85;animation:tfloatA var(--d,8s) ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));}
+  .tfloat .fm svg{width:var(--sz,54px);height:var(--sz,54px);}
+  @keyframes tfloatA{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-16px) rotate(var(--r,0deg))}}
+  .tcontent{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;animation:tin .8s cubic-bezier(.2,.8,.2,1);}
+  @keyframes tin{0%{opacity:0;transform:translateY(16px) scale(.97)}100%{opacity:1;transform:none}}
+  #titlescreen .ttlBadge{font-size:10px;letter-spacing:6px;color:var(--cyan);margin-bottom:10px;opacity:.9;}
+  .titleArt{margin-bottom:10px;} .titleArt svg{width:60px;height:60px;filter:drop-shadow(0 0 14px rgba(79,216,200,.6));}
+  #titlescreen h1{position:relative;font-size:min(46px,10vw);font-weight:900;letter-spacing:1px;margin-bottom:8px;line-height:1.05;color:transparent;}
+  /* 背面: 太い縁取り(濃紺) */
+  #titlescreen h1::before{content:attr(data-text);position:absolute;left:0;top:0;right:0;z-index:1;-webkit-text-stroke:7px #0a2048;color:#0a2048;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));}
+  /* 前面: 明るいグラデ塗り */
+  #titlescreen h1::after{content:attr(data-text);position:absolute;left:0;top:0;right:0;z-index:2;
+    background:linear-gradient(180deg,#f2fbff 0%,#aee6ff 42%,#5fb8f0 72%,#3f8ad8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 2px 8px rgba(79,170,232,.5));}
+  #titlescreen .sub{color:#aab8d4;font-size:12px;margin-bottom:20px;letter-spacing:.5px;}
+  .nameField{margin-bottom:16px;}
+  .nameField input{font-family:inherit;font-size:14px;text-align:center;background:rgba(10,20,36,.85);color:var(--txt);border:1px solid rgba(120,150,200,.4);border-radius:12px;padding:11px 14px;width:230px;max-width:72vw;transition:.15s;}
+  .nameField input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(79,216,200,.2),0 0 14px rgba(79,216,200,.4);}
+  .startRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .startBtn{font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:1px;color:#051018;border:none;border-radius:14px;padding:13px 32px;
+    background:linear-gradient(135deg,#6fe8d6,#4fa8e8);box-shadow:0 6px 0 #2a6a86,0 10px 20px rgba(0,0,0,.4);transition:transform .1s,box-shadow .1s,filter .1s;}
+  .startBtn:hover{filter:brightness(1.08);}
+  .startBtn:active{transform:translateY(4px);box-shadow:0 2px 0 #2a6a86,0 4px 10px rgba(0,0,0,.4);}
+  .startBtn.alt{background:linear-gradient(135deg,#9fe0a0,#4fd8c8);box-shadow:0 6px 0 #2a7a5a,0 10px 20px rgba(0,0,0,.4);}
+  #titlescreen .tip{color:#7f8db0;font-size:10px;margin-top:18px;line-height:1.9;max-width:460px;}
 
   /* starter modal */
   #starterModal{position:absolute;inset:0;z-index:52;background:rgba(6,12,22,.97);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
@@ -229,7 +324,7 @@
   <header>
     <div class="titleRow">
       <div class="brand"><span class="logo" id="logoSlot"></span><span class="title">フィジカモンスター</span></div>
-      <div class="hbtns"><button class="iconBtn" id="bgmBtn" title="BGM">♪</button><button class="iconBtn" id="openMenu">☰ MENU</button></div>
+      <div class="hbtns"><button class="iconBtn" id="fsBtn" title="全画面">⛶</button><button class="iconBtn" id="bgmBtn" title="BGM">♪</button><button class="iconBtn" id="openMenu">☰ MENU</button></div>
     </div>
     <div class="stats">
       <div class="chip">👤 <b id="pname">―</b></div>
@@ -242,6 +337,7 @@
 
   <div id="viewport">
     <div id="world"></div>
+    <div id="battleWipe"></div>
     <div id="areaName">―</div>
     <canvas id="minimap" width="86" height="58"></canvas>
     <div id="dialogue">
@@ -298,17 +394,22 @@
 
     <!-- TITLE -->
     <div id="titlescreen">
-      <div class="ttlBadge">PHYSICS · ALL FIELDS</div>
-      <div class="titleArt" id="titleArt"></div>
-      <h1>フィジカモンスター</h1>
-      <div class="sub">力学・波動・熱・電磁気・原子を学ぶモンスターバトル</div>
-      <div class="nameField"><input id="nameInput" maxlength="8" placeholder="トレーナー名（8字まで）"></div>
-      <div>
-        <button class="startBtn" id="newBtn">▶ はじめる</button>
-        <button class="startBtn" id="contBtn" style="display:none;background:linear-gradient(90deg,var(--lime),var(--cyan));">つづきから</button>
+      <div class="tsky"></div>
+      <div class="tgrid"></div>
+      <div class="tfloat" id="tfloat"></div>
+      <div class="tcontent">
+        <div class="ttlBadge">PHYSICS · ALL FIELDS</div>
+        <div class="titleArt" id="titleArt"></div>
+        <h1 data-text="フィジカモンスター">フィジカモンスター</h1>
+        <div class="sub">力学・波動・熱・電磁気・原子を学ぶモンスターバトル</div>
+        <div class="nameField"><input id="nameInput" maxlength="8" placeholder="トレーナー名（8字まで）"></div>
+        <div class="startRow">
+          <button class="startBtn" id="newBtn">▶ はじめる</button>
+          <button class="startBtn alt" id="contBtn" style="display:none;">つづきから</button>
+        </div>
+        <button class="iconBtn" id="resetBtn" style="font-size:10px;margin-top:8px;">セーブ削除</button>
+        <div class="tip">移動 = 矢印/WASD　会話 = Space　メニュー = M<br>草むらで出会い、技で物理の公式クイズに正解して戦う。相性とコンボを活かし、弱らせて捕獲。<br>アリーナでCPUに挑戦（バッジ）。⚔で登録者と自由対戦、📋で編成登録、🏆でランキング！</div>
       </div>
-      <button class="iconBtn" id="resetBtn" style="font-size:10px;margin-top:6px;">セーブ削除</button>
-      <div class="tip">移動 = 矢印/WASD　会話 = Space　メニュー = M<br>草むらで出会い、技で物理の公式クイズに正解して戦う。相性とコンボを活かし、弱らせて捕獲。<br>アリーナでCPUに挑戦（バッジ）。⚔で登録者と自由対戦、📋で編成登録、🏆でランキング！</div>
     </div>
 
     <!-- STARTER -->
@@ -324,25 +425,38 @@
 
   <!-- BATTLE -->
   <div id="battle">
-    <div class="bfield">
-      <div class="brow foe">
-        <div class="bart" id="foeArt"></div>
-        <div class="bcard"><div class="bname"><span id="foeName">―</span><span id="foeType"></span></div>
-          <div class="blv" id="foeLv">Lv―</div><div class="hpline"><span id="foeHp" style="width:100%"></span></div></div>
+    <!-- SV風バトルステージ: 奥に相手(右上)・手前に自分(左下) -->
+    <div class="svstage">
+      <!-- 相手パネル(左上) -->
+      <div class="svpanel foe" id="svFoePanel">
+        <div class="svname"><span id="foeName">―</span><span class="svtype" id="foeType"></span></div>
+        <div class="svlvrow"><span class="svlv" id="foeLv">Lv―</span>
+          <div class="svhp"><span class="svhpfill" id="foeHp" style="width:100%"></span></div></div>
       </div>
-      <div class="bmid"><span class="partyDots" id="partyDots"></span><span class="combo" id="comboTag"></span></div>
-      <div class="brow me">
-        <div class="bart" id="myArt"></div>
-        <div class="bcard"><div class="bname"><span id="myName">―</span><span id="myType"></span></div>
-          <div class="blv" id="myLv">Lv―</div><div class="hpline"><span id="myHp" style="width:100%"></span></div>
-          <div class="hptxt" id="myHpTxt"></div><div class="xpline"><span id="myExp" style="width:0%"></span></div></div>
+      <!-- 相手モンスター(右・奥) -->
+      <div class="svmon foe" id="foeArt"></div>
+      <!-- 自分モンスター(左・手前) -->
+      <div class="svmon me" id="myArt"></div>
+      <!-- 自分パネル(右下) -->
+      <div class="svpanel me" id="svMyPanel">
+        <div class="svname"><span id="myName">―</span><span class="svtype" id="myType"></span></div>
+        <div class="svlvrow"><span class="svlv" id="myLv">Lv―</span>
+          <div class="svhp"><span class="svhpfill" id="myHp" style="width:100%"></span></div></div>
+        <div class="svhptxt" id="myHpTxt"></div>
+        <div class="svxp"><span id="myExp" style="width:0%"></span></div>
       </div>
+      <!-- 控え・コンボ -->
+      <div class="svtop"><span class="partyDots" id="partyDots"></span><span class="combo" id="comboTag"></span></div>
+      <div class="svfx" id="svfx"></div>
     </div>
-    <div id="battleMenu"></div>
-    <div id="quizArea" style="display:none;">
-      <div class="quizMove" id="quizMove"></div>
-      <div class="quizQ" id="quizQ"></div>
-      <div id="quizChoices"></div>
+    <!-- 下部: 技ボタン or クイズ -->
+    <div class="svcmd">
+      <div id="battleMenu"></div>
+      <div id="quizArea" style="display:none;">
+        <div class="quizMove" id="quizMove"></div>
+        <div class="quizQ" id="quizQ"></div>
+        <div id="quizChoices"></div>
+      </div>
     </div>
   </div>
 
@@ -440,6 +554,11 @@ const QUESTIONS = {
       return {q:"初速0、加速度"+a+" m/s² で "+t+" 秒後の速さは？(v=at)",correct:r.correct,wrong:r.wrong};}},
     {gen:()=>{const g=10;const t=pick([1,2,3]);const v=g*t;const r=mc(v," m/s",[t,g,v+g]);
       return {q:"自由落下(g=10)で "+t+" 秒後の速さは？(初速0)",correct:r.correct,wrong:r.wrong};}},
+    {q:"速度と加速度の関係で正しいのは？", correct:"加速度は速度の変化の割合", wrong:["加速度は速度そのもの","加速度は距離の割合","加速度は力に反比例"]},
+    {q:"質量2kgの物体に6Nの力。加速度は？(a=F/m)", correct:"3 m/s²", wrong:["12 m/s²","6 m/s²","0.33 m/s²"]},
+    {q:"等速直線運動の物体にはたらく合力は？", correct:"0（力がつり合っている）", wrong:["一定の正の力","速度に比例する力","重力だけ"]},
+    {gen:()=>{const m=pick([2,3,5]);const a=pick([2,3,4]);const F=m*a;const r=mc(F," N",[m+a,m/a,a/m]);
+      return {q:"質量"+m+" kg を "+a+" m/s² で加速する力は？(F=ma)",correct:r.correct,wrong:r.wrong};}},
   ],
   /* --- 力学 応用 --- */
   mech_adv:[
@@ -451,6 +570,9 @@ const QUESTIONS = {
       return {q:"質量"+m+" kg、速さ"+v+" m/s の運動量は？(p=mv)",correct:r.correct,wrong:r.wrong};}},
     {gen:()=>{const m=pick([1,2]);const v=pick([4,6,8]);const r=pick([2,4]);const F=m*v*v/r;const rr=mc(F," N",[m*v/r,m*r/(v*v),v*v/r]);
       return {q:"質量"+m+" kg が速さ"+v+" m/s で半径"+r+" m の円運動。向心力は？(F=mv²/r)",correct:rr.correct,wrong:rr.wrong};}},
+    {q:"周期Tと角速度ωの関係は？", correct:"ω = 2π/T", wrong:["ω = T/2π","ω = 2πT","ω = π/T"]},
+    {q:"単振り子の周期は？", correct:"T = 2π√(L/g)", wrong:["T = 2π√(g/L)","T = 2π√(m/k)","T = 2π·L/g"]},
+    {q:"運動量が保存するのはどんな系？", correct:"外力がはたらかない系", wrong:["摩擦のある系","力が加わる系","静止した系だけ"]},
   ],
   /* --- 波動 基礎 --- */
   wave_basic:[
@@ -462,6 +584,10 @@ const QUESTIONS = {
       return {q:"振動数"+f+" Hz、波長"+lam+" m の波の速さは？(v=fλ)",correct:r.correct,wrong:r.wrong};}},
     {gen:()=>{const f=pick([2,4,5,10]);const r=mc(1/f," s",[f,f/2,2/f,f*f]);
       return {q:"振動数"+f+" Hz の波の周期は？(T=1/f)",correct:r.correct,wrong:r.wrong};}},
+    {q:"波が伝わるとき、媒質（物質）自体は？", correct:"その場で振動するだけで移動しない", wrong:["波と一緒に移動する","消えてなくなる","波より速く動く"]},
+    {q:"横波と縦波の違いは？", correct:"振動の向きが波の進行方向と垂直(横)か平行(縦)か", wrong:["速さの違い","波長の違い","音か光かの違い"]},
+    {gen:()=>{const V=340;const f=pick([170,340,680]);const lam=V/f;const r=mc(lam," m",[f/V,V*f,f]);
+      return {q:"音速340 m/s で振動数"+f+" Hz の音の波長は？(λ=V/f)",correct:r.correct,wrong:r.wrong};}},
   ],
   /* --- 波動 応用 --- */
   wave_adv:[
@@ -484,6 +610,8 @@ const QUESTIONS = {
       return {q:"質量"+m+" g、比熱"+c+" J/(g·K) を "+dt+" K 上げる熱量は？(Q=mcΔt)",correct:r.correct,wrong:r.wrong};}},
     {gen:()=>{const t=pick([27,100,-73,-173]);const T=t+273;const r=mc(T," K",[t,273-t,T+100,t-273]);
       return {q:t+"℃ を絶対温度に直すと？(T=t+273)",correct:r.correct,wrong:r.wrong};}},
+    {q:"比熱の定義は？", correct:"物質1gの温度を1K上げるのに必要な熱量", wrong:["物質1molの重さ","温度そのもの","熱の伝わる速さ"]},
+    {q:"熱が高温から低温へ移るのは？", correct:"自然に起こる（逆は自然には起きない）", wrong:["どちらにも自由に移る","低温から高温へ移る","移動しない"]},
   ],
   /* --- 熱 応用 --- */
   heat_adv:[
@@ -505,6 +633,9 @@ const QUESTIONS = {
       return {q:"抵抗"+R+" Ω に電流"+I+" A。電圧は？(V=RI)",correct:r.correct,wrong:r.wrong};}},
     {gen:()=>{const V=pick([6,12,24]);const I=pick([2,3,4]);const P=V*I;const r=mc(P," W",[V+I,V/I,I/V]);
       return {q:"電圧"+V+" V、電流"+I+" A のときの電力は？(P=VI)",correct:r.correct,wrong:r.wrong};}},
+    {q:"電流の向きは何の移動の向きで定義される？", correct:"正の電荷の移動の向き（電子とは逆）", wrong:["電子の移動の向きと同じ","中性子の向き","磁場の向き"]},
+    {gen:()=>{const V=pick([6,12,20]);const R=pick([2,4,5]);const I=V/R;const r=mc(I," A",[V*R,R/V,V+R]);
+      return {q:"電圧"+V+" V を抵抗"+R+" Ω にかけたときの電流は？(I=V/R)",correct:r.correct,wrong:r.wrong};}},
   ],
   /* --- 電磁気 応用 --- */
   elec_adv:[
@@ -523,6 +654,8 @@ const QUESTIONS = {
     {q:"物質波（ド・ブロイ波長）は？", correct:"λ = h/(mv)", wrong:["λ = mv/h","λ = h·mv","λ = hv/m"]},
     {q:"原子核の構成要素は？", correct:"陽子と中性子", wrong:["陽子と電子","中性子と電子","陽子のみ"]},
     {q:"質量数は何の和？", correct:"陽子の数＋中性子の数", wrong:["陽子の数＋電子の数","中性子の数のみ","陽子の数のみ"]},
+    {q:"原子番号は何で決まる？", correct:"陽子の数", wrong:["中性子の数","電子と中性子の和","質量数"]},
+    {q:"光が波と粒子の両方の性質をもつことを？", correct:"光の二重性", wrong:["屈折","全反射","分散"]},
   ],
   /* --- 原子 応用 --- */
   atom_adv:[
@@ -545,6 +678,9 @@ const QUESTIONS = {
       return {q:"質量"+m+" kg、速さ"+v+" m/s の運動エネルギーは？(K=½mv²)",correct:r.correct,wrong:r.wrong};}},
     {gen:()=>{const m=pick([2,5]);const g=10;const h=pick([3,4,10]);const U=m*g*h;const r=mc(U," J",[m*h,m*g,g*h]);
       return {q:"質量"+m+" kg を高さ"+h+" m(g=10)に持ち上げた位置エネルギーは？(U=mgh)",correct:r.correct,wrong:r.wrong};}},
+    {q:"エネルギーの単位は？", correct:"J（ジュール）", wrong:["N（ニュートン）","W（ワット）","Pa（パスカル）"]},
+    {gen:()=>{const F=pick([5,10,20]);const x=pick([2,3,4]);const W=F*x;const r=mc(W," J",[F+x,F/x,x/F]);
+      return {q:""+F+" N の力で "+x+" m 動かす仕事は？(W=Fx)",correct:r.correct,wrong:r.wrong};}},
   ],
   /* --- エネルギー 応用 --- */
   energy_adv:[
@@ -557,34 +693,53 @@ const QUESTIONS = {
       return {q:""+W+" J の仕事を "+t+" 秒でした。仕事率は？(P=W/t)",correct:r.correct,wrong:r.wrong};}},
   ],
   /* --- 四天王・難問プール（計算が重い/複合） --- */
+  /* ===== 四天王・物理王・Admin用: 構造理解型(成立条件・前提・因果) ===== */
   hard_mech:[
-    {gen:()=>{const v0=pick([20,30]);const g=10;const t=v0/g;const h=v0*v0/(2*g);const r=mc(h," m",[v0*v0/g,v0/g,v0*t]);
-      return {q:"初速"+v0+" m/s で真上に投げた(g=10)。最高点の高さは？(h=v₀²/2g)",correct:r.correct,wrong:r.wrong};}},
-    {gen:()=>{const m1=pick([2,3]);const v1=pick([4,6]);const m2=pick([1,2]);const v=m1*v1/(m1+m2); // 完全非弾性
-      const r=mc(Math.round(v*100)/100," m/s",[v1,m1*v1/m2,(m1+m2)/v1]);
-      return {q:"質量"+m1+" kg・速さ"+v1+" m/s の物体が静止した"+m2+" kg と合体。合体後の速さは？(運動量保存)",correct:r.correct,wrong:r.wrong};}},
-    {q:"なめらかな斜面(角θ)上の物体の加速度は？", correct:"a = g·sinθ", wrong:["a = g·cosθ","a = g·tanθ","a = g"]},
+    {q:"運動方程式 F=ma の F を「合力」とせず個々の力のどれか1つにしてしまうと？", correct:"加速度を正しく求められない（Fは必ず合力）", wrong:["結果は変わらない","質量が変化する","速度が一定になる"]},
+    {q:"斜面上の物体で a=g·sinθ が成り立つための前提は？", correct:"摩擦と空気抵抗が無視でき、斜面が動かないとき", wrong:["摩擦があるときも常に","斜面が動いていてもよい","物体が静止しているとき"]},
+    {q:"水平投射で「水平方向は等速」「鉛直方向は自由落下」と分けられる理由は？", correct:"重力は鉛直方向にのみはたらき、水平方向に力がないから", wrong:["速さが小さいから","空気が支えるから","水平の力と鉛直の力が打ち消すから"]},
+    {q:"運動量保存則が使えるのはどんなとき？", correct:"外力（外からの力）がはたらかない、または無視できるとき", wrong:["どんな衝突でも常に","摩擦が大きいとき","力学的エネルギーが保存するときだけ"]},
+    {q:"「向心力」という新しい力が物体に加わっていると考えるのは正しい？", correct:"正しくない。張力や重力など既存の力が向心力の役割を果たす", wrong:["正しい。向心力という独立した力がある","正しい。遠心力と対で生じる","どちらとも言えない"]},
+    {q:"単振動で復元力が F=−kx と書けるための本質的な条件は？", correct:"変位に比例し、常に中心（つり合いの位置）へ向かう力であること", wrong:["速さに比例する力であること","一定の大きさの力であること","重力だけがはたらくこと"]},
+    {q:"自由落下の式 v=gt が使えるのは？", correct:"初速0で、重力以外の力（空気抵抗など）が無視できるとき", wrong:["初速があってもよい","空気抵抗があるときも常に","水平に投げたとき"]},
   ],
   hard_elec:[
-    {gen:()=>{const R1=pick([2,3]);const R2=pick([6,4]);const Rp=R1*R2/(R1+R2);const V=pick([6,12]);const I=V/Rp;
-      const r=mc(Math.round(I*100)/100," A",[V/(R1+R2),V*Rp,V/R1]);
-      return {q:""+R1+" Ω と "+R2+" Ω の並列に "+V+" V。全電流は？(並列合成→I=V/R)",correct:r.correct,wrong:r.wrong};}},
-    {q:"磁束密度Bの一様磁場に垂直に速さvで入った電荷qの円運動の半径は？", correct:"r = mv/(qB)", wrong:["r = qB/(mv)","r = qvB/m","r = mvB/q"]},
-    {gen:()=>{const C=pick([2,4]);const V=pick([5,10]);const Q=C*V;const U=0.5*C*V*V;const r=mc(U," ×10⁻⁶ J",[C*V,Q,C*V*V]);
-      return {q:""+C+" μF のコンデンサーを "+V+" V で充電。蓄えられるエネルギーは？(U=½CV²)",correct:r.correct,wrong:r.wrong};}},
+    {q:"オームの法則 V=RI がそのまま成り立つのは？", correct:"抵抗値Rが一定（温度などで変化しない）とみなせるとき", wrong:["どんな素子でも常に","電球のフィラメントでも常に","コンデンサーでも常に"]},
+    {q:"抵抗の直列で各抵抗に共通なのは？並列で共通なのは？", correct:"直列は電流が共通、並列は電圧が共通", wrong:["直列も並列も電流が共通","直列も並列も電圧が共通","直列は電圧、並列は電流が共通"]},
+    {q:"磁場中の荷電粒子が等速円運動するのはなぜ？", correct:"ローレンツ力が速度に常に垂直で、速さを変えず向きだけ変えるから", wrong:["磁場が粒子を加速するから","電場が仕事をするから","速さが増え続けるから"]},
+    {q:"F=BIL（電流が磁場から受ける力）で、電流と磁場が平行のときは？", correct:"力は0（垂直成分がないため）", wrong:["最大になる","向きだけ変わる","電流が止まる"]},
+    {q:"コンデンサーに「電流が流れる」とはどういう状態？", correct:"極板に電荷がたまっていく（充電中）過程で、極板間を電子が渡るわけではない", wrong:["電子が極板間を飛び越える","常に一定の電流が流れ続ける","抵抗と同じく電流が流れ続ける"]},
+    {q:"電磁誘導の起電力が生じる本質的な条件は？", correct:"コイルを貫く磁束が時間的に変化すること", wrong:["磁束が大きいこと","磁石が近くにあること（静止でも可）","電流が流れていること"]},
   ],
   hard_wave:[
-    {q:"開管(両端開口)の気柱の基本振動の波長は、管長Lの？", correct:"2L", wrong:["L","4L","L/2"]},
-    {q:"閉管(片方閉)の気柱の基本振動の波長は、管長Lの？", correct:"4L", wrong:["2L","L","L/4"]},
-    {gen:()=>{const n=pick([1,2,3]);const L=pick([0.5,1]);const V=340;const lam=2*L/n;const f=V/lam;
-      const r=mc(Math.round(f)," Hz",[V*lam,V/(2*L),n*L]);
-      return {q:"長さ"+L+" m の弦(両端固定)の第"+n+"倍振動の振動数は？(音速340, λ=2L/n)",correct:r.correct,wrong:r.wrong};}},
+    {q:"ドップラー効果で振動数が変化する本質的な理由は？", correct:"音源と観測者の相対運動で、単位時間に受け取る波の数が変わるから", wrong:["音速そのものが変わるから","音の大きさが変わるから","波長だけが変わり振動数は不変"]},
+    {q:"弦の両端が固定のとき、定常波で両端は必ず？", correct:"節（振動しない点）になる", wrong:["腹（最も振動する点）になる","どちらにもなりうる","振動数で決まる"]},
+    {q:"閉管の気柱の基本振動が開管と違う理由は？", correct:"閉じた端が節、開いた端が腹になるという境界条件が異なるから", wrong:["管の材質が違うから","音速が違うから","空気の量が違うから"]},
+    {q:"ヤングの実験で干渉じまが見えるために必要な条件は？", correct:"2つのスリットからの光の位相がそろっている（可干渉）こと", wrong:["スリットが非常に大きいこと","光が非常に強いこと","スクリーンが近いこと"]},
+    {q:"音速 V=331.5+0.6t が示すのは？", correct:"気温が高いほど音速が速くなること", wrong:["音が大きいほど速いこと","振動数が高いほど速いこと","気圧で決まること"]},
+    {q:"凸レンズの写像公式 1/a+1/b=1/f が前提とするのは？", correct:"レンズが薄く、光軸近くの光線を考える（近軸近似）こと", wrong:["どんな厚いレンズでも常に","光が単色でなくてよい","物体が無限遠にあること"]},
+  ],
+  hard_heat:[
+    {q:"ボイル・シャルルの法則 pV/T=一定 が前提とするのは？", correct:"気体の物質量（mol）が一定で、理想気体とみなせること", wrong:["気体が液体に変化してよい","分子間力が強いとき","温度が0℃のときだけ"]},
+    {q:"熱力学第一法則 ΔU=Q+W で、断熱変化(Q=0)のとき内部エネルギーは？", correct:"された仕事Wの分だけ変化する（ΔU=W）", wrong:["変化しない","Qの分だけ変化する","常に増える"]},
+    {q:"セルシウス温度でなく絶対温度を使う理由は？", correct:"気体の法則などで、温度が0になると量も0になる比例関係を正しく表せるから", wrong:["数値が大きくて見やすいから","水の沸点を基準にするため","歴史的な慣習にすぎない"]},
+    {q:"Q=mcΔt が成り立つのは？", correct:"状態変化（融解・蒸発など）が起きず、比熱cが一定とみなせる範囲", wrong:["氷が水に変わる間でも常に","温度変化がないときも","圧力が変わるときだけ"]},
+    {q:"同じ熱量を加えても物質で温度変化が違うのは？", correct:"比熱（1gを1K上げるのに必要な熱量）が物質ごとに異なるから", wrong:["質量が違うから","体積が違うから","色が違うから"]},
   ],
   hard_atom:[
-    {q:"水素原子のボーアモデルで、定常状態の条件(量子条件)は？", correct:"2πr = nλ（円周が波長の整数倍）", wrong:["2πr = λ/n","r = nλ","πr² = nλ"]},
-    {gen:()=>{const h=6.6;const f=pick([5,10]);const E=h*f;const r=mc(E," ×10⁻¹⁹ J",[h/f,f/h,h*f*f]);
-      return {q:"振動数"+f+"×10¹⁴ Hz の光子のエネルギーは？(E=hν, h=6.6×10⁻³⁴)",correct:r.correct,wrong:r.wrong};}},
-    {q:"光電効果で限界振動数ν₀より小さい光を当てると？", correct:"強くしても電子は飛び出さない", wrong:["強くすれば飛び出す","必ず飛び出す","電子が吸収される"]},
+    {q:"光電効果で、弱い光でも振動数が大きければ電子が飛び出すのはなぜ？", correct:"光子1個のエネルギー hν が仕事関数を超えるかで決まり、光の強さ（光子の数）は別だから", wrong:["弱い光は電子を押せないから","強さだけで決まるから","波長が関係ないから"]},
+    {q:"ボーアモデルの量子条件 2πr=nλ が意味するのは？", correct:"電子波が軌道を一周して自分とつながる（定常波になる）半径だけが許されること", wrong:["電子が光速で回ること","軌道が無数にあること","電子が核に落ちること"]},
+    {q:"α崩壊・β崩壊で保存されるのは？", correct:"質量数と電荷（原子番号の増減はこの保存から決まる）", wrong:["原子番号そのもの","中性子の数","半減期"]},
+    {q:"半減期が「残り何個か」と無関係に一定なのはなぜ？", correct:"各原子核が崩壊する確率が一定で、個数に依存しないから", wrong:["原子が相談して崩壊するから","温度で決まるから","外から力を加えるから"]},
+    {q:"E=mc² が意味するのは？", correct:"質量とエネルギーは同等で、互いに変換できること", wrong:["質量は光速で動くこと","エネルギーに質量はないこと","質量は保存しないこと"]},
+    {q:"物質波 λ=h/(mv) で、身近な物体の波動性が見えないのは？", correct:"質量が大きく波長が極端に短いため", wrong:["速さが遅いから","電荷がないから","光でないから"]},
+  ],
+  hard_energy:[
+    {q:"力学的エネルギー保存則（運動+位置エネルギー=一定）が使えるのは？", correct:"摩擦や空気抵抗など、力学的エネルギーを失わせる力がはたらかないとき", wrong:["摩擦があるときも常に","力がはたらかないときだけ","運動量が保存するときだけ"]},
+    {q:"摩擦があると力学的エネルギーはどうなる？", correct:"保存せず、一部が熱エネルギーなどに移る", wrong:["増える","完全に消える","変わらない"]},
+    {q:"仕事 W=Fx で、力の向きと移動の向きが垂直のとき仕事は？", correct:"0（移動方向の力の成分がないため）", wrong:["最大になる","負になる","力の大きさに等しい"]},
+    {q:"v=√(2gh)（高さhから落ちた速さ）の導出の前提は？", correct:"力学的エネルギー保存（空気抵抗を無視）", wrong:["等速運動","運動量保存","力がはたらかない"]},
+    {q:"同じ仕事でも「仕事率」が違うのはなぜ？", correct:"仕事率は単位時間あたりの仕事で、かかった時間で変わるから", wrong:["仕事の大きさが違うから","力が違うから","距離が違うから"]},
   ],
   /* --- 混合（やさしい・基本技） --- */
   mixed_easy:[
@@ -607,14 +762,18 @@ const SPECIES = {
     learnset:[{lv:1,move:"momentum"},{lv:1,move:"velocity"},{lv:1,move:"conserve"}], evo:null},
   /* 波動ライン */
   waverin:{name:"ウェイヴリン", type:"wave", base:{hp:46,atk:50,spd:60}, look:{shape:"wave",pal:"wave",tier:1},
-    learnset:[{lv:1,move:"tackle"},{lv:1,move:"wavefront"},{lv:14,move:"doppler"}], evo:{to:"wavelord",lv:22}},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"wavefront"},{lv:14,move:"doppler"}], evo:{to:"wavelord",lv:18}},
   wavelord:{name:"ウェイヴロード", type:"wave", base:{hp:64,atk:76,spd:80}, look:{shape:"bird",pal:"wave",tier:2},
-    learnset:[{lv:1,move:"wavefront"},{lv:1,move:"doppler"},{lv:28,move:"photon"}], evo:null},
+    learnset:[{lv:1,move:"wavefront"},{lv:1,move:"doppler"},{lv:28,move:"photon"}], evo:{to:"wavecosmos",lv:34}},
+  wavecosmos:{name:"ウェイヴコスモ", type:"wave", base:{hp:84,atk:94,spd:92}, look:{shape:"dragon",pal:"wave",tier:3},
+    learnset:[{lv:1,move:"doppler"},{lv:1,move:"wavefront"},{lv:1,move:"photon"}], evo:null},
   /* 熱ライン */
   thermo:{name:"サーモ", type:"heat", base:{hp:52,atk:54,spd:48}, look:{shape:"flame",pal:"heat",tier:1},
-    learnset:[{lv:1,move:"tackle"},{lv:1,move:"thermal"},{lv:14,move:"gaslaw"}], evo:{to:"thermion",lv:24}},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"thermal"},{lv:14,move:"gaslaw"}], evo:{to:"thermion",lv:18}},
   thermion:{name:"サーミオン", type:"heat", base:{hp:78,atk:78,spd:64}, look:{shape:"beast",pal:"heat",tier:2},
-    learnset:[{lv:1,move:"gaslaw"},{lv:1,move:"thermal"},{lv:30,move:"energyshot"}], evo:null},
+    learnset:[{lv:1,move:"gaslaw"},{lv:1,move:"thermal"},{lv:30,move:"energyshot"}], evo:{to:"thermegna",lv:34}},
+  thermegna:{name:"サーメグナ", type:"heat", base:{hp:98,atk:92,spd:70}, look:{shape:"flame",pal:"heat",tier:3},
+    learnset:[{lv:1,move:"gaslaw"},{lv:1,move:"thermal"},{lv:1,move:"energyshot"}], evo:null},
   /* 電磁気ライン */
   voltin:{name:"ボルティン", type:"elec", base:{hp:44,atk:56,spd:58}, look:{shape:"bolt",pal:"elec",tier:1},
     learnset:[{lv:1,move:"tackle"},{lv:1,move:"ohm"},{lv:10,move:"wavefront"},{lv:16,move:"lorentz"}], evo:{to:"voltron",lv:16}},
@@ -624,21 +783,25 @@ const SPECIES = {
     learnset:[{lv:1,move:"lorentz"},{lv:1,move:"ohm"},{lv:1,move:"wavefront"}], evo:null},
   /* 原子ライン */
   atomin:{name:"アトミン", type:"atom", base:{hp:48,atk:54,spd:62}, look:{shape:"atom",pal:"atom",tier:1},
-    learnset:[{lv:1,move:"tackle"},{lv:1,move:"photon"},{lv:14,move:"nuclear"}], evo:{to:"atomlord",lv:24}},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"photon"},{lv:14,move:"nuclear"}], evo:{to:"atomlord",lv:18}},
   atomlord:{name:"アトムロード", type:"atom", base:{hp:70,atk:82,spd:78}, look:{shape:"bird",pal:"atom",tier:2},
-    learnset:[{lv:1,move:"nuclear"},{lv:1,move:"photon"},{lv:30,move:"lorentz"}], evo:null},
+    learnset:[{lv:1,move:"nuclear"},{lv:1,move:"photon"},{lv:30,move:"lorentz"}], evo:{to:"atomnova",lv:34}},
+  atomnova:{name:"アトムノヴァ", type:"atom", base:{hp:88,atk:100,spd:88}, look:{shape:"atom",pal:"atom",tier:3},
+    learnset:[{lv:1,move:"nuclear"},{lv:1,move:"photon"},{lv:1,move:"lorentz"}], evo:null},
   /* エネルギーライン */
   enern:{name:"エネルン", type:"energy", base:{hp:55,atk:50,spd:52}, look:{shape:"core",pal:"energy",tier:1},
-    learnset:[{lv:1,move:"tackle"},{lv:1,move:"energyshot"},{lv:12,move:"conserve"}], evo:{to:"enegon",lv:20}},
+    learnset:[{lv:1,move:"tackle"},{lv:1,move:"energyshot"},{lv:12,move:"conserve"}], evo:{to:"enegon",lv:18}},
   enegon:{name:"エネゴン", type:"energy", base:{hp:78,atk:68,spd:62}, look:{shape:"golem",pal:"energy",tier:2},
-    learnset:[{lv:1,move:"conserve"},{lv:1,move:"energyshot"},{lv:26,move:"velocity"}], evo:null},
+    learnset:[{lv:1,move:"conserve"},{lv:1,move:"energyshot"},{lv:26,move:"velocity"}], evo:{to:"eneverse",lv:34}},
+  eneverse:{name:"エネヴァース", type:"energy", base:{hp:104,atk:84,spd:74}, look:{shape:"core",pal:"energy",tier:3},
+    learnset:[{lv:1,move:"conserve"},{lv:1,move:"energyshot"},{lv:1,move:"momentum"}], evo:null},
 };
 
 /* 野生出現テーブル */
 const WILD = {
   area1:["mechick","waverin","enern","voltin","thermo","atomin"],
   area2:["mechion","voltron","waverin","thermion","atomin","enern"],
-  area3:["mechion","voltron","enegon","wavelord","atomlord","thermion"],
+  area3:["mechion","voltron","enegon","wavelord","atomlord","thermion","mechgalaxy","voltdeus","wavecosmos","atomnova"],
 };
 
 /* 対戦相手トレーナー（四天王＋物理王）。四天王は難問プールを出題(adminのhardフラグで制御) */
@@ -656,21 +819,21 @@ const TRAINERS = [
    team:[{sp:"voltdeus",lv:28},{sp:"atomlord",lv:27},{sp:"mechion",lv:27}],
    intro:"電磁気は物理の華。回路も磁場もローレンツ力も、全部見せてもらう。", lose:"雷を乗りこなしたか…君こそ電磁気の使い手だ。"},
   {id:"t_genshi", name:"物理王 ゲンシ", rank:5, color:"#9a7cf0", elite:true,
-   team:[{sp:"mechgalaxy",lv:33},{sp:"voltdeus",lv:33},{sp:"atomlord",lv:32},{sp:"wavelord",lv:32}],
+   team:[{sp:"mechgalaxy",lv:36},{sp:"voltdeus",lv:36},{sp:"atomnova",lv:35},{sp:"wavecosmos",lv:35},{sp:"thermegna",lv:34}],
    intro:"力学・波動・熱・電磁気・原子――全範囲の公式を修めし者よ。最後の試練だ！", lose:"……完璧だ。君は物理の全てを修めた、真の物理王だ。"},
 ];
 
 /* 隠しボス: 全トレーナー撃破後に出現 */
 const ADMIN_TRAINER = {
   id:"t_admin", name:"Administrator", rank:99, color:"#f0566e", admin:true, elite:true,
-  team:[{sp:"mechgalaxy",lv:46},{sp:"voltdeus",lv:46},{sp:"atomlord",lv:45},{sp:"wavelord",lv:45},{sp:"thermion",lv:44},{sp:"enegon",lv:44}],
+  team:[{sp:"mechgalaxy",lv:48},{sp:"voltdeus",lv:48},{sp:"atomnova",lv:47},{sp:"wavecosmos",lv:47},{sp:"thermegna",lv:46},{sp:"eneverse",lv:46}],
   intro:"ようこそ、物理の頂へ。全法則を統べる管理者として、最難関の問いを授けよう。",
   lose:"……認証完了。宇宙の法則は、いま君のものだ。おめでとう。"
 };
 
 /* 四天王・物理王・Administrator が出す難問プール(分野別) */
 const ELITE_HARD = {
-  mech:"hard_mech", elec:"hard_elec", wave:"hard_wave", atom:"hard_atom", heat:"heat_adv", energy:"energy_adv"
+  mech:"hard_mech", elec:"hard_elec", wave:"hard_wave", atom:"hard_atom", heat:"hard_heat", energy:"hard_energy"
 };
 
 const BOSS_LINES={};
@@ -840,13 +1003,28 @@ function trainerSVG(color){return `<svg viewBox="0 0 40 46" xmlns="http://www.w3
   <path d="M17 20 q3 2 6 0" stroke="#b07a52" stroke-width="1.2" fill="none"/>
   <rect x="8" y="26" width="24" height="20" rx="5" fill="${color}"/><rect x="15" y="26" width="10" height="20" fill="rgba(255,255,255,.14)"/></svg>`;}
 /* 主人公 */
-function heroSVG(){return `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+/* 歩行アニメ対応。frame:0/1(足踏み), face:"down"/"up"/"left"/"right" */
+function heroSVG(frame,face){
+  frame=frame||0; face=face||"down";
+  // 足の位置を交互に
+  const l1 = frame===1 ? 2 : 0, l2 = frame===1 ? -2 : 0;
+  // 顔の向き(目の位置)
+  let eyes;
+  if(face==="up"){ eyes=`<rect x="12.5" y="6.5" width="2" height="1.2" fill="#26304a" opacity=".4"/><rect x="17.5" y="6.5" width="2" height="1.2" fill="#26304a" opacity=".4"/>`; }
+  else if(face==="left"){ eyes=`<rect x="12" y="7" width="2" height="1.5" fill="#26304a"/>`; }
+  else if(face==="right"){ eyes=`<rect x="18" y="7" width="2" height="1.5" fill="#26304a"/>`; }
+  else { eyes=`<rect x="12.5" y="7" width="2" height="1.5" fill="#26304a"/><rect x="17.5" y="7" width="2" height="1.5" fill="#26304a"/>`; }
+  // 体の少しの上下(歩行バウンド)
+  const by = frame===1 ? -0.6 : 0;
+  return `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <ellipse cx="16" cy="29" rx="8" ry="2.2" fill="rgba(0,0,0,.35)"/>
+  <g transform="translate(0 ${by})">
   <rect x="11" y="4" width="10" height="8" rx="3" fill="#e7c8a4"/><rect x="10" y="3" width="12" height="3.6" rx="2" fill="#34406a"/>
-  <rect x="12.5" y="7" width="2" height="1.5" fill="#26304a"/><rect x="17.5" y="7" width="2" height="1.5" fill="#26304a"/>
+  ${eyes}
   <rect x="9" y="12" width="14" height="12" rx="4" fill="#2f9f8f"/><rect x="14" y="12" width="4" height="12" fill="rgba(255,255,255,.18)"/>
-  <rect x="11" y="24" width="3.4" height="6" rx="1.4" fill="#26304a"/><rect x="17.6" y="24" width="3.4" height="6" rx="1.4" fill="#26304a"/>
-  <circle cx="24" cy="15" r="3" fill="#f0b73a"/><rect x="23" y="15" width="2" height="7" fill="#9fb0c8"/></svg>`;}
+  <rect x="${11+l1}" y="24" width="3.4" height="6" rx="1.4" fill="#26304a"/><rect x="${17.6+l2}" y="24" width="3.4" height="6" rx="1.4" fill="#26304a"/>
+  <circle cx="24" cy="15" r="3" fill="#f0b73a"/><rect x="23" y="15" width="2" height="7" fill="#9fb0c8"/>
+  </g></svg>`;}
 function heroPortrait(){return `<svg viewBox="0 0 38 46" xmlns="http://www.w3.org/2000/svg">
   <defs><linearGradient id="hp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16263f"/><stop offset="1" stop-color="#0a1420"/></linearGradient></defs>
   <rect width="38" height="46" fill="url(#hp)"/><circle cx="19" cy="15" r="9" fill="#e7c8a4"/>
@@ -1013,13 +1191,37 @@ function walkable(x,y){if(x<0||y<0||x>=COLS||y>=ROWS)return false;return MAP[y][
 function isGrass(x,y){return MAP[y]&&MAP[y][x]==="G";}
 function drawTile(t,X,Y,x,y){
   const A=AREAS[state.area];
-  let base = A.kind==="arena" ? "#120a22" : "#0a1420";
-  ctx.fillStyle=((x+y)%2)?base:(A.kind==="arena"?"#160d28":"#0c1626");ctx.fillRect(X,Y,TILE,TILE);
-  ctx.strokeStyle="rgba(79,216,200,.05)";ctx.strokeRect(X+0.5,Y+0.5,TILE-1,TILE-1);
-  if(t==="#"){ctx.fillStyle="#14203c";ctx.fillRect(X,Y,TILE,TILE);ctx.fillStyle="#1c2a4a";ctx.fillRect(X+2,Y+2,TILE-4,TILE-4);ctx.fillStyle="rgba(79,216,200,.12)";ctx.fillRect(X+2,Y+2,TILE-4,2);}
-  else if(t==="G"){ctx.fillStyle="rgba(127,224,160,.16)";ctx.fillRect(X,Y,TILE,TILE);
-    ctx.strokeStyle="rgba(127,224,160,.5)";ctx.lineWidth=1.5;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(X+8+i*8,Y+26);ctx.lineTo(X+8+i*8,Y+18);ctx.stroke();}ctx.lineWidth=1;}
-  else if(t==="T"){ctx.fillStyle="#0e3a2a";ctx.fillRect(X+4,Y+6,TILE-8,TILE-8);ctx.fillStyle="#145a3a";ctx.beginPath();ctx.arc(X+TILE/2,Y+14,9,0,7);ctx.fill();ctx.fillStyle="#1c7a4a";ctx.beginPath();ctx.arc(X+TILE/2,Y+12,6,0,7);ctx.fill();}
+  // 地面: マス目なしの連続した自然な地面。座標ベースの微妙なムラで単調さを消す。
+  const h=((x*73856093)^(y*19349663))>>>0;
+  let base;
+  if(A.kind==="arena"){ base = "#151129"; }
+  else{ base = "#0c1523"; }
+  ctx.fillStyle=base;ctx.fillRect(X,Y,TILE,TILE);
+  // ごく薄い地面のムラ(斑点)。グリッド線は描かない。
+  if((h>>8)%7===0){ctx.fillStyle="rgba(120,160,120,.05)";ctx.beginPath();ctx.arc(X+(h%TILE),Y+((h>>4)%TILE),3,0,7);ctx.fill();}
+  if(A.kind!=="arena" && (h>>12)%5===0){ctx.fillStyle="rgba(90,150,110,.06)";ctx.fillRect(X+(h%20),Y+((h>>6)%20),6,4);}
+  if(t==="#"){ // 壁: 連続した岩/茂みの縁(周囲の壁とつながって見えるよう塗りつぶし)
+    const rock=ctx.createLinearGradient(X,Y,X,Y+TILE);rock.addColorStop(0,"#2b3f63");rock.addColorStop(1,"#1a2744");
+    ctx.fillStyle=rock;ctx.fillRect(X,Y,TILE,TILE);
+    // 上面だけ明るく(光が上から)。境界線は描かず塊に見せる
+    ctx.fillStyle="rgba(150,185,240,.14)";ctx.fillRect(X,Y,TILE,TILE*0.4);
+    ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(X,Y+TILE*0.72,TILE,TILE*0.28);
+    // まばらな岩肌の点
+    if((h>>3)%3===0){ctx.fillStyle="rgba(255,255,255,.05)";ctx.fillRect(X+(h%TILE),Y+((h>>5)%TILE),2,2);}
+  }
+  else if(t==="G"){ // 草地: 塊で描き、タイル境界を感じさせない
+    ctx.fillStyle="rgba(50,140,85,.20)";ctx.fillRect(X,Y,TILE,TILE);
+    ctx.strokeStyle="rgba(150,240,180,.55)";ctx.lineWidth=1.6;ctx.lineCap="round";
+    // 位置ハッシュで草の生え方を変える(一様でない)
+    const blades=[[8,28,6,20],[15,29,16,18],[22,28,24,20],[12,30,10,23],[19,30,21,23],[26,29,27,22]];
+    blades.forEach((b,bi)=>{if(((h>>bi)&1)||bi<3){ctx.beginPath();ctx.moveTo(X+b[0],Y+b[1]);ctx.quadraticCurveTo(X+(b[0]+b[2])/2,Y+(b[1]+b[3])/2-2,X+b[2],Y+b[3]);ctx.stroke();}});
+    ctx.lineCap="butt";ctx.lineWidth=1;}
+  else if(t==="T"){ // 木: 丸い樹冠＋影＋幹
+    ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.ellipse(X+TILE/2,Y+TILE-6,10,3,0,0,7);ctx.fill();
+    ctx.fillStyle="#5a3a22";ctx.fillRect(X+TILE/2-2,Y+18,4,10);
+    ctx.fillStyle="#0e4a2e";ctx.beginPath();ctx.arc(X+TILE/2,Y+15,12,0,7);ctx.fill();
+    ctx.fillStyle="#1c7a4a";ctx.beginPath();ctx.arc(X+TILE/2,Y+13,9,0,7);ctx.fill();
+    ctx.fillStyle="#2c9a5a";ctx.beginPath();ctx.arc(X+TILE/2-2,Y+11,4.5,0,7);ctx.fill();}
   else if(t===">"||t==="<"){ctx.fillStyle="rgba(240,183,58,.3)";ctx.fillRect(X+4,Y+4,TILE-8,TILE-8);ctx.strokeStyle="#f0b73a";ctx.lineWidth=2;ctx.strokeRect(X+4,Y+4,TILE-8,TILE-8);ctx.lineWidth=1;ctx.fillStyle="#f0b73a";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText(t===">"?"▶":"◀",X+TILE/2,Y+TILE/2+5);}
   else if(t==="H"){ctx.fillStyle="rgba(127,224,160,.25)";ctx.fillRect(X+3,Y+3,TILE-6,TILE-6);ctx.strokeStyle="#7fe0a0";ctx.lineWidth=2;ctx.strokeRect(X+3,Y+3,TILE-6,TILE-6);ctx.lineWidth=1;ctx.fillStyle="#7fe0a0";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("✚",X+TILE/2,Y+TILE/2+4);}
   else if(t==="S"){ctx.fillStyle="rgba(240,183,58,.22)";ctx.fillRect(X+3,Y+3,TILE-6,TILE-6);ctx.strokeStyle="#f0b73a";ctx.lineWidth=2;ctx.strokeRect(X+3,Y+3,TILE-6,TILE-6);ctx.lineWidth=1;ctx.fillStyle="#f0b73a";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("🛍",X+TILE/2,Y+TILE/2+4);}
@@ -1051,14 +1253,18 @@ function buildSprites(){clearSprites();const A=AREAS[state.area],rec=POS[state.a
     if(rec.reg){makeSprite("reg",signSVG("#4fd8c8","📋"),"編成登録","obj");place("reg",rec.reg.x,rec.reg.y);}
     if(rec.rank){makeSprite("rank",signSVG("#f0c64a","🏆"),"ランキング","obj");place("rank",rec.rank.x,rec.rank.y);}
   }
-  makeSprite("player",heroSVG(),null);place("player",state.px,state.py);}
+  makeSprite("player",heroSVG(0,state.face||"down"),null);place("player",state.px,state.py);}
 function signSVG(color,emoji){return `<svg viewBox="0 0 32 32"><rect x="7" y="6" width="18" height="14" rx="2" fill="#16263f" stroke="${color}" stroke-width="1.5"/><rect x="15" y="20" width="2" height="8" fill="#2a3450"/><text x="16" y="16" font-size="9" text-anchor="middle">${emoji}</text></svg>`;}
 function shopSVG(){return `<svg viewBox="0 0 32 32"><rect x="6" y="12" width="20" height="16" rx="2" fill="#2a3450"/><rect x="6" y="8" width="20" height="5" fill="#f0b73a"/><rect x="9" y="16" width="5" height="8" fill="#4fd8c8"/><rect x="18" y="16" width="5" height="8" fill="#4fd8c8"/></svg>`;}
 
 /* ===== カメラ・ミニマップ ===== */
-const VW=520,VH=340;
-function camera(){let cx=state.px*TILE+TILE/2-VW/2,cy=state.py*TILE+TILE/2-VH/2;
-  cx=clamp(cx,0,Math.max(0,COLS*TILE-VW));cy=clamp(cy,0,Math.max(0,ROWS*TILE-VH));world.style.transform=`translate(${-cx}px,${-cy}px)`;}
+function viewSize(){const vp=$id("viewport");const w=vp.clientWidth||520,h=vp.clientHeight||340;return {w:w||520,h:h||340};}
+function camera(){const {w:VW,h:VH}=viewSize();const mapW=COLS*TILE,mapH=ROWS*TILE;
+  let cx,cy;
+  if(mapW<=VW){ cx=(mapW-VW)/2; } else { cx=clamp(state.px*TILE+TILE/2-VW/2,0,mapW-VW); }
+  if(mapH<=VH){ cy=(mapH-VH)/2; } else { cy=clamp(state.py*TILE+TILE/2-VH/2,0,mapH-VH); }
+  world.style.transform=`translate(${-cx}px,${-cy}px)`;}
+window.addEventListener("resize",()=>{try{if(typeof MAP!=="undefined"&&MAP)camera();}catch(e){}});
 const mm=$id("minimap"),mmx=mm.getContext("2d");
 function drawMinimap(){const sx=mm.width/COLS,sy=mm.height/ROWS;mmx.clearRect(0,0,mm.width,mm.height);
   for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const t=MAP[y][x];let c="#0c1626";
@@ -1101,6 +1307,8 @@ function sfx(k){ensureAudio();if(!actx||state.flags.bgmOff)return;
   else if(k==="evo"){[330,392,494,659,784].forEach((f,i)=>setTimeout(()=>tone(f,0.18,"sine",0.14),i*120));}
   else if(k==="catch"){[523,440,523,659].forEach((f,i)=>setTimeout(()=>tone(f,0.12,"sine",0.14),i*110));}
   else if(k==="buy"){tone(880,0.06,"sine",0.12);setTimeout(()=>tone(1175,0.08,"sine",0.12),50);}
+  else if(k==="encWild"){[988,784,988,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.09,"square",0.12),i*55));}
+  else if(k==="encTrainer"){[440,440,587,440,740].forEach((f,i)=>setTimeout(()=>tone(f,0.11,"sawtooth",0.14),i*90));}
 }
 function toggleBgm(){ensureAudio();state.flags.bgmOff=!state.flags.bgmOff;if(mg)mg.gain.value=state.flags.bgmOff?0:0.09;$id("bgmBtn").textContent=state.flags.bgmOff?"♪̸":"♪";if(!state.flags.bgmOff&&curTrack){const t=curTrack;curTrack=null;playMusic(t);}}
 
@@ -1113,6 +1321,8 @@ function advanceDialogue(){if(!dlg)return;dlg.idx++;if(dlg.idx>=dlg.lines.length
 function uiOpen(){return $id("menu").classList.contains("show")||$id("shop").classList.contains("show")||$id("register").classList.contains("show")||$id("ranking").classList.contains("show")||$id("versus").classList.contains("show")||$id("titlescreen").style.display!=="none"||$id("battle").style.display==="block"||$id("ending").classList.contains("show")||$id("starterModal").classList.contains("show");}
 function tryMove(dx,dy){
   if(dlg||uiOpen())return;
+  // 向きを更新
+  state.face = dx<0?"left":dx>0?"right":dy<0?"up":"down";
   const nx=state.px+dx,ny=state.py+dy;const A=AREAS[state.area],rec=POS[state.area];
   // アリーナ: トレーナー/ショップ
   if(A.kind==="arena"){
@@ -1132,7 +1342,9 @@ function tryMove(dx,dy){
   if(t==="H"){healAll();refresh();saveState();toast("✚ 手持ちが全回復した！");sfx("level");return;}
   if(t==="S"){openShop();return;}
   if(!walkable(nx,ny))return;
-  state.px=nx;state.py=ny;place("player",nx,ny);camera();drawMinimap();
+  state.px=nx;state.py=ny;state.walkFrame=(state.walkFrame?0:1);
+  if(sprites.player)sprites.player.innerHTML=heroSVG(state.walkFrame,state.face);
+  place("player",nx,ny);camera();drawMinimap();
   // 草むらエンカウント
   if(isGrass(nx,ny)&&Math.random()<0.18){wildEncounter();}
 }
@@ -1155,10 +1367,19 @@ function wildEncounter(){
 }
 function SPECIES_WILD(w){return WILD[w]||WILD.area1;}
 function pick2(a){return a[Math.floor(Math.random()*a.length)];}
+function trainerAlert(t,cb){
+  // ポケモン風「！」演出: トレーナーのスプライト上に ! を出す
+  let el=null;
+  for(const k in sprites){ if(k==="admin"&&t.admin){el=sprites[k];break;} if(k.startsWith("arena_")){ /* 位置から特定は難しいので後述 */ } }
+  // arena_* はindexベースなので、CPU配列から探す
+  if(!el){const opp=loadOpponents();const idx=opp.cpu.findIndex(c=>c.id===t.id);if(idx>=0&&sprites["arena_"+idx])el=sprites["arena_"+idx];}
+  if(el){const mark=document.createElement("div");mark.className="alertMark";mark.textContent="!";el.appendChild(mark);
+    sfx("encTrainer");setTimeout(()=>{try{mark.remove();}catch(e){}cb();},650);}
+  else { cb(); }
+}
 function challengeTrainer(t){
-  if(state.beaten.includes(t.id)){ // 再戦可
-    startDialogue(t.name,t.color||"#9a7cf0",["また挑戦だね、受けて立とう！"],()=>beginTrainerBattle(t)); return; }
-  startDialogue(t.name,t.color||"#9a7cf0",[ (BOSS_LINES[t.id]?BOSS_LINES[t.id].intro:"勝負だ！") ],()=>beginTrainerBattle(t));
+  const lines = state.beaten.includes(t.id) ? ["また挑戦だね、受けて立とう！"] : [ (BOSS_LINES[t.id]?BOSS_LINES[t.id].intro:"勝負だ！") ];
+  trainerAlert(t, ()=> startDialogue(t.name,t.color||"#9a7cf0",lines,()=>beginTrainerBattle(t)) );
 }
 function beginTrainerBattle(t){
   const foeTeam=t.team.map(m=>makeMon(m.sp,m.lv));
@@ -1166,14 +1387,24 @@ function beginTrainerBattle(t){
 }
 function beginBattle(cfg){
   if(!firstAlive(state.party)){toast("戦えるモンスターがいない！回復所(✚)へ");return;}
-  B={...cfg, myIdx:state.party.findIndex(m=>m.hp>0), turn:0, usedQ:[], combo:0, curQ:null, awaitMove:true, caught:false};
+  B={...cfg, myIdx:state.party.findIndex(m=>m.hp>0), turn:0, usedQ:[], combo:0, curQ:null, awaitMove:true, caught:false, pp:{}};
+  // PP初期化(技ごと。威力が高いほど少なめ)。手持ち全員分。
+  state.party.forEach((m,mi)=>{B.pp[mi]={};m.moves.forEach(mk=>{B.pp[mi][mk]=movePP(mk);});});
   dexAdd(B.foe.sp);
-  $id("viewport").style.display="none";$id("battle").style.display="block";
-  $id("battle").classList.toggle("trainer",cfg.type==="trainer");
-  playMusic("battle");renderBattle();
-  const foeName=SPECIES[B.foe.sp].name;
-  log('<span class="sys">⚔ </span>'+(cfg.type==="trainer"?(cfg.trainer.name+'が勝負を仕掛けてきた！'):('野生の'+foeName+'が現れた！')));
-  showMoveMenu();
+  sfx(cfg.type==="trainer"?"encTrainer":"encWild");
+  // ポケモン風の突入トランジション → 戦闘画面
+  const wipe=$id("battleWipe");
+  if(wipe){ wipe.classList.remove("clear"); wipe.className="flash"+(cfg.type==="trainer"?" trainer":""); }
+  const dur=cfg.type==="trainer"?600:500;
+  setTimeout(()=>{
+    $id("viewport").style.display="none";$id("battle").style.display="block";
+    $id("battle").classList.toggle("trainer",cfg.type==="trainer");
+    if(wipe){wipe.className="";}
+    playMusic("battle");renderBattle();
+    const foeName=SPECIES[B.foe.sp].name;
+    log('<span class="sys">⚔ </span>'+(cfg.type==="trainer"?(cfg.trainer.name+'が勝負を仕掛けてきた！'):('野生の'+foeName+'が現れた！')));
+    showMoveMenu();
+  }, dur);
 }
 function myMon(){return state.party[B.myIdx];}
 function renderBattle(){
@@ -1182,25 +1413,33 @@ function renderBattle(){
   $id("foeLv").textContent="Lv"+foe.lv;
   $id("foeType").innerHTML=typeBadge(SPECIES[foe.sp].type);
   $id("foeArt").innerHTML=monSVG(foe.sp);
-  $id("foeHp").style.width=Math.max(0,foe.hp/foe.maxhp*100)+"%";
+  const fr=foe.hp/foe.maxhp;$id("foeHp").style.width=Math.max(0,fr*100)+"%";
+  $id("foeHp").style.background=fr<0.25?"linear-gradient(90deg,#f0566e,#f06a9a)":(fr<0.5?"linear-gradient(90deg,#f0b73a,#f0c64a)":"linear-gradient(90deg,#f06a9a,#f0566e)");
   $id("myName").textContent=SPECIES[my.sp].name;
   $id("myLv").textContent="Lv"+my.lv;
   $id("myType").innerHTML=typeBadge(SPECIES[my.sp].type);
   $id("myArt").innerHTML=monSVG(my.sp);
-  $id("myHp").style.width=Math.max(0,my.hp/my.maxhp*100)+"%";
+  const mr=my.hp/my.maxhp;$id("myHp").style.width=Math.max(0,mr*100)+"%";
+  $id("myHp").style.background=mr<0.25?"linear-gradient(90deg,#f0566e,#f06a9a)":(mr<0.5?"linear-gradient(90deg,#f0b73a,#f0c64a)":"linear-gradient(90deg,#7fe0a0,#4fd8c8)");
   $id("myHpTxt").textContent=my.hp+"/"+my.maxhp;
   $id("myExp").style.width=(my.exp/expToNext(my.lv)*100)+"%";
   $id("comboTag").textContent=B.combo>=2?("🔥"+B.combo):"";
   // 控え表示
   $id("partyDots").innerHTML=state.party.map((m,i)=>`<span class="pdot ${m.hp>0?'':'ko'} ${i===B.myIdx?'cur':''}" title="${SPECIES[m.sp].name}"></span>`).join("");
 }
-function typeBadge(tp){const T=TYPES[tp];return `<span class="tbadge" style="background:${T.color}22;border-color:${T.color};color:${T.color}">${T.name}</span>`;}
+function typeBadge(tp){const T=TYPES[tp];return `<span class="svtype" style="background:${T.color}26;border-color:${T.color};color:${T.color}">${T.name}</span>`;}
+/* 技のPP最大値(威力が高いほど少なめ) */
+function movePP(mk){const p=MOVES[mk].power; if(p>=52)return 8; if(p>=40)return 12; return 18;}
+function curPP(mk){ if(!B||!B.pp||!B.pp[B.myIdx])return movePP(mk); const v=B.pp[B.myIdx][mk]; return (v===undefined)?movePP(mk):v; }
 function showMoveMenu(){
   if(!B)return;
   B.awaitMove=true;const my=myMon();const acts=$id("battleMenu");acts.innerHTML="";
-  my.moves.forEach(mk=>{const mv=MOVES[mk];const b=document.createElement("button");b.className="mvBtn";
-    b.innerHTML=`<b>${mv.name}</b><span class="mvmeta">${TYPES[mv.type].name}・威力${mv.power}</span>`;
-    b.onclick=()=>useMove(mk);acts.appendChild(b);});
+  // 救済: 全技PP0なら各技PPを少し回復(行き詰まり防止)
+  if(B.pp&&B.pp[B.myIdx]&&my.moves.every(mk=>curPP(mk)<=0)){my.moves.forEach(mk=>{B.pp[B.myIdx][mk]=Math.max(3,Math.floor(movePP(mk)/3));});toast("ひと息ついてPPが少し回復した");}
+  my.moves.forEach(mk=>{const mv=MOVES[mk];const T=TYPES[mv.type];const pp=curPP(mk),ppmax=movePP(mk);
+    const b=document.createElement("button");b.className="mvBtn";b.style.setProperty("--mvc",T.color);
+    b.innerHTML=`<b>${mv.name}</b><span class="mvmeta"><span>${T.name}・威力${mv.power}</span><span class="mvpp">PP ${pp}/${ppmax}</span></span>`;
+    if(pp<=0){b.disabled=true;} else b.onclick=()=>useMove(mk);acts.appendChild(b);});
   // コマンド
   const row=document.createElement("div");row.className="cmdRow";
   const bag=document.createElement("button");bag.className="cmdBtn";bag.textContent="🎒 道具";bag.onclick=showBag;
@@ -1233,30 +1472,49 @@ function useMove(mk){
    mine=true はプレイヤーの攻撃(与ダメ大きめ)、false は敵の攻撃(控えめ)。 */
 function calcDamage(mv,attacker,defender,mul,mine){
   const dmax=defender.maxhp;
-  // 威力を割合に変換: 威力40で基準。プレイヤーは相手HPの約33%(等倍)、敵は約18%。
-  const base = mine ? 0.009 : 0.0052;      // 係数
-  let frac = mv.power * base;               // 威力ベースの割合
-  // レベル/攻撃力差を緩やかに反映(±25%程度)
+  // 威力を割合に変換。プレイヤーは相手HPの約35%(等倍)、敵は強め。
+  const base = mine ? 0.009 : 0.0064;       // 係数（敵を強化）
+  let frac = mv.power * base;
   const atkRatio = clamp(attacker.atk / Math.max(6, (SPECIES[defender.sp].base.atk*defender.lv/50+5)), 0.6, 1.6);
-  frac *= (0.75 + 0.25*atkRatio);
+  frac *= mine ? (0.75 + 0.25*atkRatio) : (0.8 + 0.3*atkRatio);
+  // 敵の攻撃はレベルが高いほど痛打(被ダメアップ)。上限で理不尽を防ぐ。
+  if(!mine){ frac *= (1 + clamp(attacker.lv/70, 0, 0.4)); }
   frac *= mul;                              // 相性
   if(mine && B && B.combo>=3) frac *= 1.25; // コンボボーナス
-  if(mine && B && B.combo>=6) frac *= 1.15; // さらに
+  if(mine && B && B.combo>=6) frac *= 1.15;
+  if(!mine) frac = Math.min(frac, 0.42);    // 敵1発は最大でも相手HPの42%まで
   let dmg = Math.round(dmax * frac);
-  const floor = mine ? Math.max(4, Math.round(dmax*0.15)) : 3; // 最低保証(プレイヤーは下振れしすぎない)
+  const floor = mine ? Math.max(4, Math.round(dmax*0.15)) : 4; // 最低保証
   return Math.max(floor, dmg);
+}
+/* 技エフェクト: dir "toFoe"(自分→相手) / "toMe"(相手→自分)。color=タイプ色 */
+function playFx(dir,color,sup){
+  const fx=$id("svfx"); if(!fx)return;
+  const c=color||"#4fd8c8";
+  // 光弾
+  const orb=document.createElement("div");orb.className="fxOrb "+dir;orb.style.setProperty("--fxc",c);fx.appendChild(orb);
+  // 着弾の衝撃波＋フラッシュ(着弾タイミングで)
+  setTimeout(()=>{
+    const burst=document.createElement("div");burst.className="fxBurst "+(dir==="toFoe"?"atFoe":"atMe");burst.style.setProperty("--fxc",c);fx.appendChild(burst);
+    if(sup){const fl=document.createElement("div");fl.className="fxFlash";fl.style.setProperty("--fxc",c);fx.appendChild(fl);setTimeout(()=>fl.remove(),320);}
+    setTimeout(()=>burst.remove(),420);
+  },300);
+  setTimeout(()=>{try{orb.remove();}catch(e){}},360);
 }
 function answerMove(i,btn){
   document.querySelectorAll(".qchoice").forEach(b=>b.disabled=true);
   const o=B.curQ.opts[i],mv=MOVES[B.pendingMove],my=myMon(),foe=B.foe;
   if(o.ok){
     B.combo++;btn.classList.add("correct");
+    // PP消費(正解で技が発動したとき)
+    if(B.pp&&B.pp[B.myIdx]&&B.pp[B.myIdx][B.pendingMove]!==undefined){B.pp[B.myIdx][B.pendingMove]=Math.max(0,B.pp[B.myIdx][B.pendingMove]-1);}
     // ダメージ計算
     const mul=typeMul(mv.type,SPECIES[foe.sp].type);
     let dmg=calcDamage(mv,my,foe,mul,true);
     if(mul>=2){sfx("super");}else if(mul<=0.5){sfx("weak");}else{sfx("hit");}
-    const art=$id("foeArt");art.classList.add("hit");setTimeout(()=>art.classList.remove("hit"),300);
-    foe.hp=Math.max(0,foe.hp-dmg);renderBattle();
+    playFx("toFoe", TYPES[mv.type].color, mul>=2); // 技エフェクト(自分→相手)
+    const art=$id("foeArt");setTimeout(()=>{art.classList.add("hit");setTimeout(()=>art.classList.remove("hit"),300);},290);
+    foe.hp=Math.max(0,foe.hp-dmg);setTimeout(renderBattle,300);
     let eff=mul>=2?" 効果は抜群だ！":(mul<=0.5?" 効果はいまひとつ…":"");
     log('正解！ '+SPECIES[my.sp].name+'の'+mv.name+'！ '+dmg+'ダメージ'+(B.combo>=3?'（コンボ）':'')+'。'+eff);
     if(foe.hp<=0){setTimeout(foeFainted,700);}else{setTimeout(foeTurn,900);}
@@ -1280,8 +1538,9 @@ function foeTurn(){
     let dmg=calcDamage(mv,foe,my,mul,false);
     my.hp=Math.max(0,my.hp-dmg);
     if(mul>=2)sfx("super");else sfx("hit");
-    const art=$id("myArt");art.classList.add("hit");setTimeout(()=>art.classList.remove("hit"),300);
-    renderBattle();
+    playFx("toMe", TYPES[mv.type].color, mul>=2); // 技エフェクト(相手→自分)
+    const art=$id("myArt");setTimeout(()=>{art.classList.add("hit");setTimeout(()=>art.classList.remove("hit"),300);},290);
+    setTimeout(renderBattle,300);
     let eff=mul>=2?" 効果は抜群だ！":(mul<=0.5?" 効果はいまひとつ…":"");
     log('相手の'+SPECIES[foe.sp].name+'の'+mv.name+'！ '+dmg+'ダメージ。'+eff);
     if(my.hp<=0){setTimeout(afterMyFaint,800);return;}
@@ -1524,7 +1783,7 @@ function switchTab(n){document.querySelectorAll("#menu .tab").forEach(t=>t.class
   document.querySelectorAll("#menu .mpanel").forEach(p=>p.classList.remove("show"));$id("mpanel-"+n).classList.add("show");renderTab(n);}
 function renderTab(n){
   if(n==="team"){
-    let h="";state.party.forEach((m,i)=>{const sp=SPECIES[m.sp];h+=`<div class="monrow">
+    let h="";state.party.forEach((m,i)=>{const sp=SPECIES[m.sp];h+=`<div class="monrow" style="border-left:4px solid ${TYPES[sp.type].color}">
       <div class="monart">${monSVG(m.sp)}</div>
       <div class="moninfo"><div class="monname">${sp.name} <span class="tbadge" style="background:${TYPES[sp.type].color}22;border-color:${TYPES[sp.type].color};color:${TYPES[sp.type].color}">${TYPES[sp.type].name}</span></div>
         <div class="monsub">Lv${m.lv} ／ HP ${m.hp}/${m.maxhp} ／ 技: ${m.moves.map(k=>MOVES[k].name).join("・")}</div>
@@ -1586,6 +1845,12 @@ document.addEventListener("keydown",e=>{if($id("titlescreen").style.display!=="n
   if(keyMap[e.key]){e.preventDefault();tryMove(...keyMap[e.key]);}});
 $id("dialogue").addEventListener("click",advanceDialogue);
 $id("openMenu").onclick=openMenu;$id("closeMenu").onclick=closeMenu;$id("closeShop").onclick=closeShop;$id("bgmBtn").onclick=toggleBgm;$id("edClose").onclick=closeEnding;
+function toggleFullscreen(){const app=$id("app");
+  try{ if(!document.fullscreenElement){ (app.requestFullscreen||app.webkitRequestFullscreen||function(){}).call(app); }
+    else { (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); } }catch(e){}
+  setTimeout(()=>{try{camera();drawMinimap();}catch(e){}},150);}
+if($id("fsBtn"))$id("fsBtn").onclick=toggleFullscreen;
+document.addEventListener("fullscreenchange",()=>{setTimeout(()=>{try{camera();drawMinimap();}catch(e){}},120);});
 $id("closeRegister").onclick=closeRegister;$id("closeRanking").onclick=closeRanking;$id("closeVersus").onclick=closeVersus;
 document.querySelectorAll("#menu .tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
 document.querySelectorAll(".dpad button[data-d]").forEach(b=>{const m={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};b.onclick=()=>tryMove(...m[b.dataset.d]);});
@@ -1647,7 +1912,15 @@ function resetGame(){ if(confirm("この端末のセーブを消して最初か�
 function init(){
   initFirebase(); // FIREBASE_CONFIG があればクラウド有効化
   buildAreas();resolvePositions();state=freshState("");
-  $id("logoSlot").innerHTML=monSVG("mechgalaxy");$id("titleArt").innerHTML=`<div style="display:flex;gap:6px;justify-content:center">${monSVG("mechgalaxy")}${monSVG("voltdeus")}${monSVG("atomlord")}</div>`;
+  $id("logoSlot").innerHTML=monSVG("mechgalaxy");$id("titleArt").innerHTML=`<div style="display:flex;gap:6px;justify-content:center">${monSVG("mechgalaxy")}${monSVG("voltdeus")}${monSVG("atomnova")}</div>`;
+  // タイトルの浮遊モンスター(各分野)
+  const tf=$id("tfloat");
+  if(tf){ const floats=[
+    {sp:"mechgalaxy",x:8,y:20,sz:66,d:9,r:-8},{sp:"wavecosmos",x:82,y:16,sz:58,d:8,r:6},
+    {sp:"thermegna",x:14,y:70,sz:62,d:10,r:5},{sp:"voltdeus",x:86,y:66,sz:60,d:7,r:-6},
+    {sp:"atomnova",x:72,y:40,sz:48,d:11,r:4},{sp:"eneverse",x:24,y:42,sz:46,d:9,r:-5},
+  ];
+  tf.innerHTML=floats.map(f=>`<div class="fm" style="left:${f.x}%;top:${f.y}%;--sz:${f.sz}px;--d:${f.d}s;--r:${f.r}deg;animation-delay:${(Math.random()*3).toFixed(1)}s">${monSVG(f.sp)}</div>`).join(""); }
   $id("newBtn").onclick=newGame;$id("contBtn").onclick=continueGame;$id("resetBtn").onclick=resetGame;
   // 直近のトレーナー名を名前欄に補完
   try{const ln=localStorage.getItem(CURNAME_KEY);if(ln)$id("nameInput").value=ln;}catch(e){}
